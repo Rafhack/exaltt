@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect } from "react";
-import jsPDF from "jspdf";
 import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 
@@ -9,7 +8,7 @@ const FALLBACK_CONFIG = {
     company: "TopTools Brasil",
     line: "EXALTT",
     product: "Clever Mind – Drilling AI",
-    mode: "Secure Local App",
+    mode: "Backup",
     notebookEmail: "silvio@toptools.com.br",
     onboardiaEndpoint: "/api/onboardia/pdf-agent",
     fallbackEndpoint: "/api/ai-report-agent",
@@ -481,7 +480,7 @@ export default function CleverMindDashboard() {
     "Gere o PDF e use impressão local do navegador.",
   );
   const [shareStatus, setShareStatus] = useState(
-    "Compartilhamento automático desativado por segurança. Use Salvar PDF ou E-mail manual.",
+    "Use Salvar PDF ou E-mail manual.",
   );
 
   const result = useMemo(() => {
@@ -506,7 +505,7 @@ export default function CleverMindDashboard() {
     ).toBlob();
   };
 
-  const copiarResumoSeguro = async () => {
+  const copiarResumo = async () => {
     try {
       const message = buildMessage(data, result);
 
@@ -530,7 +529,7 @@ export default function CleverMindDashboard() {
 
   const imprimirPdfNotebook = async () => {
     try {
-      setPrintAgentStatus("Gerando PDF para visualização segura...");
+      setPrintAgentStatus("Gerando PDF para visualização...");
       const blob = await buildPdf();
 
       if (
@@ -856,7 +855,7 @@ export default function CleverMindDashboard() {
               <Result label="Vc Base" value={`${result.baseVc} m/min`} />
             </div>
 
-            <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">
+            {/* <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">
               <label className="text-sm font-bold text-blue-200">
                 E-mail autorizado do notebook
               </label>
@@ -881,7 +880,7 @@ export default function CleverMindDashboard() {
                 />
                 Ativar Agent de envio externo
               </label>
-            </div>
+            </div>*/}
 
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
@@ -897,7 +896,7 @@ export default function CleverMindDashboard() {
                 Abrir no Mobile
               </button>
               <button
-                onClick={copiarResumoSeguro}
+                onClick={copiarResumo}
                 className="w-full rounded-2xl bg-slate-700 py-3 font-black text-white shadow-lg shadow-slate-950/30 hover:bg-slate-600"
               >
                 Copiar Resumo
@@ -936,7 +935,7 @@ export default function CleverMindDashboard() {
                     E-mail manual
                   </a>
                 )}
-                <button className="btn" onClick={copiarResumoSeguro}>
+                <button className="btn" onClick={copiarResumo}>
                   Copiar Resumo
                 </button>
               </div>
