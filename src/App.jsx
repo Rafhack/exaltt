@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import jsPDF from "jspdf";
+import { pdf } from "@react-pdf/renderer";
+import { ReportPdf } from "./ReportPdf";
 
 // ─── CONFIG FALLBACK (used while loading or when API is unreachable) ──────────
 const FALLBACK_CONFIG = {
@@ -498,16 +500,10 @@ export default function CleverMindDashboard() {
   const update = (field, value) =>
     setData((prev) => ({ ...prev, [field]: value }));
 
-  const buildPdf = () => {
-    const doc = new jsPDF();
-    const lines = buildMessage(data, result).split("\n");
-
-    doc.setFontSize(18);
-    doc.text("Clever Mind - Drilling AI", 20, 20);
-    doc.setFontSize(11);
-    lines.forEach((line, index) => doc.text(line, 20, 38 + index * 7));
-
-    return doc;
+  const buildPdf = async () => {
+    return pdf(
+      <ReportPdf brand={brand} data={data} result={result} email={email} />,
+    ).toBlob();
   };
 
   const copiarResumoSeguro = async () => {
@@ -535,8 +531,7 @@ export default function CleverMindDashboard() {
   const imprimirPdfNotebook = async () => {
     try {
       setPrintAgentStatus("Gerando PDF para visualização segura...");
-      const doc = buildPdf();
-      const blob = doc.output("blob");
+      const blob = await buildPdf();
 
       if (
         lastPdfUrl &&
@@ -570,8 +565,7 @@ export default function CleverMindDashboard() {
     try {
       setStatus("Gerando PDF...");
 
-      const doc = buildPdf();
-      const blob = doc.output("blob");
+      const blob = await buildPdf();
 
       if (
         lastPdfUrl &&
@@ -706,36 +700,19 @@ export default function CleverMindDashboard() {
               </span>
             </div>
             <div className="mt-4 space-y-3">
-              <Field label="Material / Classificação ISO">
-                <select
-                  className="input"
-                  value={data.material}
-                  onChange={(event) => update("material", event.target.value)}
-                >
-                  {Object.entries(materials).map(([material, info]) => (
-                    <option key={material} value={material}>
-                      {material} • ISO {info.iso}
-                    </option>
-                  ))}
-                </select>
-                <div className="mt-3 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3 text-sm text-blue-100">
-                  <p className="font-bold">{result.isoDescription}</p>
-                  <p className="mt-1 text-blue-100/80">
-                    {result.materialClass}
-                  </p>
-                </div>
-              </Field>
-
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Ø Broca">
-                  <input
+                <Field label="Material / Classificação ISO">
+                  <select
                     className="input"
-                    type="number"
-                    value={data.diameter}
-                    onChange={(event) =>
-                      update("diameter", Number(event.target.value))
-                    }
-                  />
+                    value={data.material}
+                    onChange={(event) => update("material", event.target.value)}
+                  >
+                    {Object.entries(materials).map(([material, info]) => (
+                      <option key={material} value={material}>
+                        {material} • ISO {info.iso}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
                 <Field label="HRC">
                   <input
@@ -748,6 +725,22 @@ export default function CleverMindDashboard() {
                   />
                 </Field>
               </div>
+
+              <div className="mt-3 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3 text-sm text-blue-100">
+                <p className="font-bold">{result.isoDescription}</p>
+                <p className="mt-1 text-blue-100/80">{result.materialClass}</p>
+              </div>
+
+              <Field label="Ø Broca">
+                <input
+                  className="input"
+                  type="number"
+                  value={data.diameter}
+                  onChange={(event) =>
+                    update("diameter", Number(event.target.value))
+                  }
+                />
+              </Field>
 
               <div className="grid grid-cols-2 gap-2">
                 <Field label="Prof.">
