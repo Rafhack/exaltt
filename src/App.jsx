@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { THEMES, THEME_KEYS, DEFAULT_THEME, getTheme } from "./themes.js";
 import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 
@@ -297,6 +298,19 @@ function useConfig() {
   return { config, loading };
 }
 
+// ─── useTheme hook ─────────────────────────────────────────────────────────────
+function useTheme() {
+  const [themeKey, setThemeKey] = useState(
+    () => localStorage.getItem("exaltt-theme") ?? DEFAULT_THEME,
+  );
+  const theme = getTheme(themeKey);
+  const setTheme = (key) => {
+    setThemeKey(key);
+    localStorage.setItem("exaltt-theme", key);
+  };
+  return { theme, themeKey, setTheme };
+}
+
 function recommendExalttGeometry(material, iso, geometries) {
   const g = geometries;
   const byIso = Object.values(g).find((v) => v.iso?.includes(iso));
@@ -455,6 +469,7 @@ async function sendAgent({
 export default function CleverMindDashboard() {
   const { config, loading } = useConfig();
   const { brand, materials, depths, machines } = config;
+  const { theme, themeKey, setTheme } = useTheme();
   const NOTEBOOK_EMAIL = brand.notebookEmail;
   const ONBOARDIA_ENDPOINT = brand.onboardiaEndpoint;
   const FALLBACK_ENDPOINT = brand.fallbackEndpoint;
@@ -643,58 +658,92 @@ export default function CleverMindDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[#07111f] p-2 pb-16 text-white sm:p-4">
+    <main
+      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 pb-16 sm:p-4 pb-16`}
+    >
       <section className="mx-auto max-w-7xl space-y-3 sm:space-y-4">
-        <header className="overflow-hidden rounded-3xl border border-blue-900/40 bg-gradient-to-br from-[#0b1d33] via-[#0a1628] to-[#07111f] p-4 shadow-xl shadow-blue-950/40 sm:p-5">
+        <header
+          className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xs font-black tracking-wide text-blue-200">
-                <span className="h-2 w-2 rounded-full bg-cyan-300" />{" "}
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+              >
+                <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />{" "}
                 {brand.company} • {brand.line}
               </div>
               <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-4xl">
                 {brand.product}
               </h1>
-              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+              <p
+                className={`mt-2 max-w-2xl text-xs leading-relaxed ${theme.pageText} sm:text-sm`}
+              >
                 Aplicativo técnico para recomendação de parâmetros de furação,
                 relatório PDF e suporte ao time comercial/aplicação.
               </p>
               <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
-                <span className="rounded-full bg-blue-600 px-3 py-1">
+                <span className={`rounded-full ${theme.tagBlue} px-3 py-1`}>
                   Brocas MD
                 </span>
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-slate-200">
+                <span className={`rounded-full ${theme.tagGray} px-3 py-1`}>
                   ISO P • M • K • N • S • H
                 </span>
               </div>
             </div>
-            <span className="rounded-full border border-green-400/30 bg-green-500/10 px-4 py-2 text-xs font-bold text-green-300">
-              {brand.mode}
-            </span>
+            <div className="flex flex-col items-end gap-2">
+              <span
+                className={`rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-4 py-2 text-xs font-bold ${theme.modeBadgeText}`}
+              >
+                {brand.mode}
+              </span>
+              <select
+                value={themeKey}
+                onChange={(e) => setTheme(e.target.value)}
+                className={`rounded-xl border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} ${theme.brandBadgeText} px-3 py-1.5 text-xs font-bold outline-none cursor-pointer`}
+              >
+                {THEME_KEYS.map((k) => (
+                  <option key={k} value={k}>
+                    {THEMES[k].label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </header>
 
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
-          <Kpi label="Vc" value={result.vc} unit="m/min" />
-          <Kpi label="RPM" value={result.rpm} />
-          <Kpi label="fn" value={result.fn} unit="mm/rev" />
-          <Kpi label="Vf" value={result.vf} unit="mm/min" />
-          <Kpi label="Vida" value={result.life} unit="furos" />
-          <Kpi label="Potência +25%" value={result.power} unit="kW" />
-          <Kpi label="Torque" value={result.torque} unit="Nm" />
-          <Kpi label="Score" value={result.stability} unit="%" />
+          <Kpi label="Vc" value={result.vc} unit="m/min" theme={theme} />
+          <Kpi label="RPM" value={result.rpm} theme={theme} />
+          <Kpi label="fn" value={result.fn} unit="mm/rev" theme={theme} />
+          <Kpi label="Vf" value={result.vf} unit="mm/min" theme={theme} />
+          <Kpi label="Vida" value={result.life} unit="furos" theme={theme} />
+          <Kpi
+            label="Potência +25%"
+            value={result.power}
+            unit="kW"
+            theme={theme}
+          />
+          <Kpi label="Torque" value={result.torque} unit="Nm" theme={theme} />
+          <Kpi label="Score" value={result.stability} unit="%" theme={theme} />
         </section>
 
         <section className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-4">
-          <div className="rounded-2xl border border-slate-800/80 bg-[#0b1728] p-4 shadow-lg shadow-slate-950/30 sm:p-5">
+          <div
+            className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black tracking-[0.18em] text-blue-300">
+                <p
+                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelInput}`}
+                >
                   APLICAÇÃO
                 </p>
                 <h2 className="text-xl font-black">Entrada AI</h2>
               </div>
-              <span className="rounded-full bg-blue-600/20 px-3 py-1 text-xs font-bold text-blue-200">
+              <span
+                className={`rounded-full ${theme.topToolsBadgeBg} px-3 py-1 text-xs font-bold ${theme.topToolsBadgeText}`}
+              >
                 TopTools
               </span>
             </div>
@@ -725,9 +774,13 @@ export default function CleverMindDashboard() {
                 </Field>
               </div>
 
-              <div className="mt-3 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3 text-sm text-blue-100">
+              <div
+                className={`mt-3 rounded-2xl border ${theme.isoBorder} ${theme.isoBg} p-3 text-sm ${theme.isoText}`}
+              >
                 <p className="font-bold">{result.isoDescription}</p>
-                <p className="mt-1 text-blue-100/80">{result.materialClass}</p>
+                <p className={`mt-1 ${theme.isoLabel}`}>
+                  {result.materialClass}
+                </p>
               </div>
 
               <Field label="Ø Broca">
@@ -817,15 +870,21 @@ export default function CleverMindDashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800/80 bg-[#0b1728] p-4 shadow-lg shadow-slate-950/30 sm:p-5 lg:col-span-2">
+          <div
+            className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5 lg:col-span-2`}
+          >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-black tracking-[0.18em] text-cyan-300">
+                <p
+                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
+                >
                   RESULTADO TÉCNICO
                 </p>
                 <h2 className="text-xl font-black">Resultado AI + PDF</h2>
               </div>
-              <span className="rounded-full border border-green-400/30 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-300">
+              <span
+                className={`rounded-full border ${theme.calcBadgeBorder} ${theme.calcBadgeBg} px-3 py-1 text-xs font-bold ${theme.calcBadgeText}`}
+              >
                 Parâmetros calculados
               </span>
             </div>
@@ -834,25 +893,38 @@ export default function CleverMindDashboard() {
               <Result
                 label="Material"
                 value={`${data.material} • ${result.isoDescription}`}
+                theme={theme}
               />
-              <Result label="Classe ISO" value={result.materialClass} />
+              <Result
+                label="Classe ISO"
+                value={result.materialClass}
+                theme={theme}
+              />
               <Result
                 label="Broca Recomendada"
                 value={`EXALTT HPC Ø${data.diameter}`}
+                theme={theme}
               />
               <Result
                 label="Geometria EXALTT"
                 value={`${result.geometry.code} — ${result.geometry.name}`}
+                theme={theme}
               />
               <Result
                 label="Aplicação Geometria"
                 value={result.geometry.application}
+                theme={theme}
               />
               <Result
                 label="Profundidade"
                 value={`${data.depthFactor} / ${data.depthMm} mm`}
+                theme={theme}
               />
-              <Result label="Vc Base" value={`${result.baseVc} m/min`} />
+              <Result
+                label="Vc Base"
+                value={`${result.baseVc} m/min`}
+                theme={theme}
+              />
             </div>
 
             {/* <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">
@@ -885,45 +957,51 @@ export default function CleverMindDashboard() {
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
                 onClick={gerarPdf}
-                className="w-full rounded-2xl bg-[#00a651] py-3 font-black text-white shadow-lg shadow-green-950/30 hover:bg-green-500"
+                className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg`}
               >
                 Gerar PDF
               </button>
               <button
                 onClick={imprimirPdfNotebook}
-                className="w-full rounded-2xl bg-[#0057b8] py-3 font-black text-white shadow-lg shadow-blue-950/30 hover:bg-blue-500"
+                className={`w-full rounded-2xl ${theme.btnMobile} py-3 font-black text-white shadow-lg`}
               >
                 Abrir no Mobile
               </button>
               <button
                 onClick={copiarResumo}
-                className="w-full rounded-2xl bg-slate-700 py-3 font-black text-white shadow-lg shadow-slate-950/30 hover:bg-slate-600"
+                className={`w-full rounded-2xl ${theme.btnCopy} py-3 font-black text-white shadow-lg`}
               >
                 Copiar Resumo
               </button>
             </div>
 
-            <p className="mt-2 rounded-2xl border border-slate-700 bg-slate-950 p-2 text-xs text-slate-300">
+            <p
+              className={`mt-2 rounded-2xl border ${theme.statusBorder} ${theme.statusBg} p-2 text-xs ${theme.statusText}`}
+            >
               {status}
             </p>
-            <p className="mt-2 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-2 text-xs text-blue-100">
+            <p
+              className={`mt-2 rounded-2xl border ${theme.agentBorder} ${theme.agentBg} p-2 text-xs ${theme.agentText}`}
+            >
               {printAgentStatus}
             </p>
-            <p className="mt-2 rounded-2xl border border-indigo-400/30 bg-indigo-500/10 p-2 text-xs text-indigo-100">
+            <p
+              className={`mt-2 rounded-2xl border ${theme.shareBorder} ${theme.shareBg} p-2 text-xs ${theme.shareText}`}
+            >
               {shareStatus}
             </p>
 
             {pdfLink && (
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 no-print">
                 <a
-                  className="btn"
+                  className={`btn ${theme.btnLink}`}
                   href={pdfLink}
                   download="Resultado_AI_EXALTT.pdf"
                 >
                   Salvar PDF
                 </a>
                 <a
-                  className="btn"
+                  className={`btn ${theme.btnLink}`}
                   href={pdfLink}
                   target="_blank"
                   rel="noreferrer"
@@ -931,11 +1009,14 @@ export default function CleverMindDashboard() {
                   Abrir PDF
                 </a>
                 {emailLink && (
-                  <a className="btn" href={emailLink}>
+                  <a className={`btn ${theme.btnLink}`} href={emailLink}>
                     E-mail manual
                   </a>
                 )}
-                <button className="btn" onClick={copiarResumo}>
+                <button
+                  className={`btn ${theme.btnLink}`}
+                  onClick={copiarResumo}
+                >
                   Copiar Resumo
                 </button>
               </div>
@@ -958,7 +1039,6 @@ export default function CleverMindDashboard() {
                   </p>
                 </div>
                 <div className="text-right text-sm text-slate-600">
-                  <p>Usuário: {email}</p>
                   <p>Data: {new Date().toLocaleDateString("pt-BR")}</p>
                 </div>
               </div>
@@ -1028,8 +1108,11 @@ export default function CleverMindDashboard() {
       </section>
 
       <style>{`
-        .input{width:100%;border:1px solid rgba(59,130,246,.25);background:#07111f;border-radius:.85rem;padding:.7rem .8rem;color:white;outline:none;font-size:15px}.input:focus{border-color:#00a3ff;box-shadow:0 0 0 3px rgba(0,163,255,.16)}
-        .btn{border-radius:.85rem;background:#0057b8;padding:.75rem;text-align:center;font-weight:800;color:white;box-shadow:0 8px 18px rgba(0,0,0,.22)}.btn:hover{background:#0072ce}
+        .input{width:100%;border:1px solid ${theme.inputBorder};background:${theme.inputBg};border-radius:.85rem;padding:.7rem .8rem;color:${theme.inputText};outline:none;font-size:15px}.input:focus{border-color:${theme.inputBorderFocus};box-shadow:0 0 0 3px ${theme.inputFocusRing}}
+      `}</style>
+      <style>{`
+
+        .btn{border-radius:.85rem;padding:.75rem;text-align:center;font-weight:800;color:white;box-shadow:0 8px 18px rgba(0,0,0,.22)}
         button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
         @media print{
           body{background:white!important}.no-print, header, section > section:first-of-type, .rounded-3xl.border.border-slate-800.bg-slate-900.p-6:first-child{display:none!important}
@@ -1041,12 +1124,12 @@ export default function CleverMindDashboard() {
   );
 }
 
-function Kpi({ label, value, unit }) {
+function Kpi({ label, value, unit, theme }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 text-xl font-black">{value}</p>
-      {unit && <p className="text-[11px] text-slate-500">{unit}</p>}
+    <div className={`rounded-xl border ${theme.kpiBorder} ${theme.kpiBg} p-3`}>
+      <p className={`text-xs ${theme.kpiLabel}`}>{label}</p>
+      <p className={`mt-1 text-xl font-black ${theme.kpiValue}`}>{value}</p>
+      {unit && <p className={`text-[11px] ${theme.kpiUnit}`}>{unit}</p>}
     </div>
   );
 }
@@ -1062,11 +1145,13 @@ function Field({ label, children }) {
   );
 }
 
-function Result({ label, value }) {
+function Result({ label, value, theme }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="mt-1 text-sm font-bold text-white">{value}</p>
+    <div
+      className={`rounded-xl border ${theme.resultBorder} ${theme.resultBg} p-3`}
+    >
+      <p className={`text-xs ${theme.resultLabel}`}>{label}</p>
+      <p className={`mt-1 text-sm font-bold ${theme.resultValue}`}>{value}</p>
     </div>
   );
 }
