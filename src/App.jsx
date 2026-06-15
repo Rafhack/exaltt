@@ -666,29 +666,28 @@ export default function CleverMindDashboard() {
           className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
-              >
-                <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />{" "}
-                {brand.company} • {brand.line}
-              </div>
-              <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-4xl">
-                {brand.product}
-              </h1>
-              <p
-                className={`mt-2 max-w-2xl text-xs leading-relaxed ${theme.pageText} sm:text-sm`}
-              >
-                Aplicativo técnico para recomendação de parâmetros de furação,
-                relatório PDF e suporte ao time comercial/aplicação.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold">
-                <span className={`rounded-full ${theme.tagBlue} px-3 py-1`}>
-                  Brocas MD
-                </span>
-                <span className={`rounded-full ${theme.tagGray} px-3 py-1`}>
-                  ISO P • M • K • N • S • H
-                </span>
+            <div className="flex items-start gap-4">
+              {brand.logoUrl && (
+                <img
+                  src={brand.logoUrl}
+                  alt={brand.company}
+                  className="h-12 max-w-[120px] flex-shrink-0 object-contain sm:h-16 sm:max-w-[160px]"
+                />
+              )}
+              <div>
+                <div
+                  className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />{" "}
+                  {brand.company} • {brand.line}
+                </div>
+                <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-4xl">
+                  {brand.product}
+                </h1>
+                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+                  Aplicativo técnico para recomendação de parâmetros de furação,
+                  relatório PDF e suporte ao time comercial/aplicação.
+                </p>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -1039,6 +1038,7 @@ export default function CleverMindDashboard() {
                   </p>
                 </div>
                 <div className="text-right text-sm text-slate-600">
+                  <p>Usuário: {email}</p>
                   <p>Data: {new Date().toLocaleDateString("pt-BR")}</p>
                 </div>
               </div>
