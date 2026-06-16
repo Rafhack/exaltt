@@ -665,44 +665,46 @@ export default function CleverMindDashboard() {
         <header
           className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               {brand.logoUrl && (
                 <img
                   src={brand.logoUrl}
                   alt={brand.company}
-                  className="h-12 max-w-[120px] flex-shrink-0 object-contain sm:h-16 sm:max-w-[160px]"
+                  className="h-10 max-w-[100px] self-start sm:self-center object-contain sm:h-14 sm:max-w-[140px] md:h-16 md:max-w-[160px]"
                   style={{ filter: theme.logoFilter }}
                 />
               )}
-              <div>
+              <div className="min-w-0">
                 <div
-                  className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+                  className={`inline-flex max-w-full items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
                 >
-                  <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />{" "}
-                  {brand.company} • {brand.line}
+                  <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
+                  <span className="truncate">
+                    {brand.company} • {brand.line}
+                  </span>
                 </div>
-                <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-4xl">
+                <h1 className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:text-3xl md:text-4xl">
                   {brand.product}
                 </h1>
                 <p
-                  className={`mt-2 max-w-2xl text-xs leading-relaxed sm:text-sm ${theme.pageText}`}
+                  className={`mt-2 text-xs leading-relaxed sm:text-sm ${theme.pageText}`}
                 >
                   Aplicativo técnico para recomendação de parâmetros de furação,
                   relatório PDF e suporte ao time comercial/aplicação.
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col gap-2 md:items-end">
               <span
-                className={`rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-4 py-2 text-xs font-bold ${theme.modeBadgeText}`}
+                className={`self-start rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-4 py-2 text-xs font-bold ${theme.modeBadgeText} md:self-auto`}
               >
                 {brand.mode}
               </span>
               <select
                 value={themeKey}
                 onChange={(e) => setTheme(e.target.value)}
-                className={`rounded-xl border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} ${theme.brandBadgeText} px-3 py-1.5 text-xs font-bold outline-none cursor-pointer`}
+                className={`w-full rounded-xl border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} ${theme.brandBadgeText} px-3 py-2 text-xs font-bold outline-none cursor-pointer sm:w-auto`}
               >
                 {THEME_KEYS.map((k) => (
                   <option key={k} value={k}>
