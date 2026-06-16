@@ -90,6 +90,10 @@ export const THEMES = {
     btnMobile: "bg-[#0057b8] hover:bg-blue-500 shadow-blue-950/30",
     btnCopy: "bg-slate-700 hover:bg-slate-600 shadow-slate-950/30",
     btnLink: "bg-[#0057b8] hover:bg-[#0072ce]",
+
+    // Logo
+    logoFilter:
+      "brightness(0) invert(1) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.4))",
   },
 
   // ── Dark Gray ─────────────────────────────────────────────────────────────
@@ -160,6 +164,10 @@ export const THEMES = {
     btnMobile: "bg-zinc-700 hover:bg-zinc-600 shadow-zinc-950/30",
     btnCopy: "bg-zinc-800 hover:bg-zinc-700 shadow-zinc-950/30",
     btnLink: "bg-zinc-700 hover:bg-zinc-600",
+
+    // Logo
+    logoFilter:
+      "brightness(0) invert(1) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.4))",
   },
 
   // ── Light ─────────────────────────────────────────────────────────────────
@@ -230,6 +238,10 @@ export const THEMES = {
     btnMobile: "bg-[#0057b8] hover:bg-blue-500 shadow-blue-200/60",
     btnCopy: "bg-slate-500 hover:bg-slate-600 shadow-slate-200/60",
     btnLink: "bg-[#0057b8] hover:bg-[#0072ce]",
+
+    // Logo
+    logoFilter:
+      "brightness(0) drop-shadow(0 0 2px rgba(255,255,255,.9)) drop-shadow(0 0 6px rgba(255,255,255,.4))",
   },
 
   // ── High Contrast ─────────────────────────────────────────────────────────
@@ -300,6 +312,10 @@ export const THEMES = {
     btnMobile: "bg-yellow-400 hover:bg-yellow-300 text-black shadow-none",
     btnCopy: "bg-[#ea8909] hover:bg-[#f2af57] text-black shadow-none",
     btnLink: "bg-yellow-400 hover:bg-yellow-300 text-black",
+
+    // Logo
+    logoFilter:
+      "brightness(0) invert(1) drop-shadow(0 0 1px rgba(255,255,0,.9)) drop-shadow(0 0 4px rgba(255,255,0,.5))",
   },
 };
 

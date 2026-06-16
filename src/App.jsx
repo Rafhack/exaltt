@@ -666,12 +666,13 @@ export default function CleverMindDashboard() {
           className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               {brand.logoUrl && (
                 <img
                   src={brand.logoUrl}
                   alt={brand.company}
                   className="h-12 max-w-[120px] flex-shrink-0 object-contain sm:h-16 sm:max-w-[160px]"
+                  style={{ filter: theme.logoFilter }}
                 />
               )}
               <div>
