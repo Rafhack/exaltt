@@ -685,7 +685,9 @@ export default function CleverMindDashboard() {
                 <h1 className="mt-2 text-2xl font-black leading-tight tracking-tight sm:text-4xl">
                   {brand.product}
                 </h1>
-                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-300 sm:text-sm">
+                <p
+                  className={`mt-2 max-w-2xl text-xs leading-relaxed sm:text-sm ${theme.pageText}`}
+                >
                   Aplicativo técnico para recomendação de parâmetros de furação,
                   relatório PDF e suporte ao time comercial/aplicação.
                 </p>
@@ -749,7 +751,7 @@ export default function CleverMindDashboard() {
             </div>
             <div className="mt-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Material / Classificação ISO">
+                <Field label="Material / Classificação ISO" theme={theme}>
                   <select
                     className="input"
                     value={data.material}
@@ -762,7 +764,7 @@ export default function CleverMindDashboard() {
                     ))}
                   </select>
                 </Field>
-                <Field label="HRC">
+                <Field label="HRC" theme={theme}>
                   <input
                     className="input"
                     type="number"
@@ -783,7 +785,7 @@ export default function CleverMindDashboard() {
                 </p>
               </div>
 
-              <Field label="Ø Broca">
+              <Field label="Ø Broca" theme={theme}>
                 <input
                   className="input"
                   type="number"
@@ -795,7 +797,7 @@ export default function CleverMindDashboard() {
               </Field>
 
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Prof.">
+                <Field label="Prof." theme={theme}>
                   <select
                     className="input"
                     value={data.depthFactor}
@@ -808,7 +810,7 @@ export default function CleverMindDashboard() {
                     ))}
                   </select>
                 </Field>
-                <Field label="mm">
+                <Field label="mm" theme={theme}>
                   <input
                     className="input"
                     type="number"
@@ -820,7 +822,7 @@ export default function CleverMindDashboard() {
                 </Field>
               </div>
 
-              <Field label="Máquina">
+              <Field label="Máquina" theme={theme}>
                 <select
                   className="input"
                   value={data.machine}
@@ -833,7 +835,7 @@ export default function CleverMindDashboard() {
               </Field>
 
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Refrig.">
+                <Field label="Refrig." theme={theme}>
                   <select
                     className="input"
                     value={data.coolant}
@@ -843,7 +845,7 @@ export default function CleverMindDashboard() {
                     <option>Externa</option>
                   </select>
                 </Field>
-                <Field label="bar">
+                <Field label="bar" theme={theme}>
                   <input
                     className="input"
                     type="number"
@@ -855,7 +857,7 @@ export default function CleverMindDashboard() {
                 </Field>
               </div>
 
-              <Field label="Objetivo">
+              <Field label="Objetivo" theme={theme}>
                 <select
                   className="input"
                   value={data.goal}
@@ -1135,10 +1137,10 @@ function Kpi({ label, value, unit, theme }) {
   );
 }
 
-function Field({ label, children }) {
+function Field({ label, children, theme }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold text-slate-300">
+      <span className={`mb-1.5 block text-xs font-bold ${theme.pageText}`}>
         {label}
       </span>
       {children}
