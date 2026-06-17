@@ -1,4 +1,11 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  Image,
+  StyleSheet,
+} from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
@@ -11,9 +18,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     borderBottom: 1,
     borderColor: "#e2e8f0",
     paddingBottom: 14,
+  },
+
+  logo: {
+    width: 120,
+    height: 40,
+    objectFit: "contain",
+  },
+
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  headerContent: {
+    marginLeft: 16,
   },
 
   brand: {
@@ -142,22 +165,27 @@ function PdfKpi({ label, value }) {
 }
 
 export function ReportPdf({ brand, data, result, email }) {
+  console.log(`LOGO: ${brand.logoUrl}`);
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* HEADER */}
 
         <View style={styles.header}>
-          <View>
-            <Text style={styles.brand}>
-              {brand.company} • {brand.line}
-            </Text>
+          <View style={styles.headerLeft}>
+            <Image style={styles.logo} src={brand.logoUrl} />
 
-            <Text style={styles.title}>{brand.product}</Text>
+            <View style={styles.headerContent}>
+              <Text style={styles.brand}>
+                {brand.company} • {brand.line}
+              </Text>
 
-            <Text style={styles.subtitle}>
-              Resultado AI para visualização e impressão
-            </Text>
+              <Text style={styles.title}>{brand.product}</Text>
+
+              <Text style={styles.subtitle}>
+                Resultado AI para visualização e impressão
+              </Text>
+            </View>
           </View>
 
           <View>
