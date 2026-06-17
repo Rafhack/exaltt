@@ -748,7 +748,7 @@ export default function CleverMindDashboard() {
               <span
                 className={`rounded-full ${theme.topToolsBadgeBg} px-3 py-1 text-xs font-bold ${theme.topToolsBadgeText}`}
               >
-                TopTools
+                {brand.company}
               </span>
             </div>
             <div className="mt-4 space-y-3">
@@ -1033,7 +1033,7 @@ export default function CleverMindDashboard() {
               <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
                   <p className="text-sm font-black text-blue-700">
-                    TOPTOOLS BRASIL • EXALTT
+                    {brand.company} • {brand.line}
                   </p>
                   <h2 className="text-2xl font-black">
                     Clever Mind – Drilling AI
