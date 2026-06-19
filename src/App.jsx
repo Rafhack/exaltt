@@ -850,13 +850,12 @@ export default function CleverMindDashboard() {
             >
               {shareStatus}
             </p>
-
             {pdfLink && (
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 no-print">
                 <a
                   className={`btn ${theme.btnLink}`}
                   href={pdfLink}
-                  download="Resultado_AI_EXALTT.pdf"
+                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_EXALTT-HPC-D4_${data.diameter}.pdf`}
                 >
                   Salvar PDF
                 </a>

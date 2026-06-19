@@ -170,7 +170,6 @@ function PdfKpi({ label, value }) {
 }
 
 export function ReportPdf({ brand, data, result, email }) {
-  console.log(`LOGO: ${brand.logoUrl}`);
   return (
     <Document>
       <Page size="A4" style={styles.page}>
