@@ -11,8 +11,6 @@ const FALLBACK_CONFIG = {
     product: "Clever Mind – Drilling AI",
     mode: "Backup",
     notebookEmail: "silvio@toptools.com.br",
-    onboardiaEndpoint: "/api/onboardia/pdf-agent",
-    fallbackEndpoint: "/api/ai-report-agent",
   },
   materials: {
     // ISO P — Aços carbono, ligados e ferramenta
@@ -327,10 +325,6 @@ function recommendExalttGeometry(material, iso, geometries) {
   return g.XTA ?? byIso ?? Object.values(g)[0];
 }
 
-function validEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(email).trim());
-}
-
 // alignedEmail is now called inside the component where NOTEBOOK_EMAIL is in scope
 
 function calcAI(
@@ -442,37 +436,10 @@ function buildMessage(data, result) {
   ].join("\n");
 }
 
-async function sendAgent({
-  email,
-  pdfBlob,
-  subject,
-  message,
-  payload,
-  endpoint,
-}) {
-  if (typeof fetch !== "function")
-    throw new Error("Fetch API indisponível neste ambiente.");
-
-  const formData = new FormData();
-  formData.append("email", email);
-  formData.append("subject", subject);
-  formData.append("message", message);
-  formData.append("payload", JSON.stringify(payload));
-  formData.append("file", pdfBlob, "Resultado_AI_EXALTT.pdf");
-
-  const response = await fetch(endpoint, { method: "POST", body: formData });
-  if (!response.ok) throw new Error(`Falha no envio em ${endpoint}`);
-
-  return response.json().catch(() => ({ message: "PDF enviado com sucesso." }));
-}
-
 export default function CleverMindDashboard() {
   const { config, loading } = useConfig();
   const { brand, materials, depths, machines } = config;
   const { theme, themeKey, setTheme } = useTheme();
-  const NOTEBOOK_EMAIL = brand.notebookEmail;
-  const ONBOARDIA_ENDPOINT = brand.onboardiaEndpoint;
-  const FALLBACK_ENDPOINT = brand.fallbackEndpoint;
 
   const [data, setData] = useState({
     material: "SAE 4140",
@@ -485,17 +452,12 @@ export default function CleverMindDashboard() {
     pressure: 20,
     goal: "Alta produtividade",
   });
-  const [email, setEmail] = useState(NOTEBOOK_EMAIL);
-  const [agentEnabled, setAgentEnabled] = useState(false);
   const [status, setStatus] = useState("Sistema AI pronto.");
   const [pdfLink, setPdfLink] = useState("");
   const [emailLink, setEmailLink] = useState("");
   const [lastPdfUrl, setLastPdfUrl] = useState("");
-  const [printAgentStatus, setPrintAgentStatus] = useState(
-    "Gere o PDF e use impressão local do navegador.",
-  );
   const [shareStatus, setShareStatus] = useState(
-    "Use Salvar PDF ou E-mail manual.",
+    "Use Salvar PDF, E-mail manual ou Copiar Resumo.",
   );
 
   const result = useMemo(() => {
@@ -509,8 +471,8 @@ export default function CleverMindDashboard() {
     }
   }, [data, config]);
 
-  const emailOk =
-    String(email).trim().toLowerCase() === NOTEBOOK_EMAIL.toLowerCase();
+  const email = brand.notebookEmail;
+
   const update = (field, value) =>
     setData((prev) => ({ ...prev, [field]: value }));
 
@@ -538,39 +500,6 @@ export default function CleverMindDashboard() {
     } catch {
       setShareStatus(
         "Não foi possível copiar automaticamente. Use Salvar PDF.",
-      );
-    }
-  };
-
-  const imprimirPdfNotebook = async () => {
-    try {
-      setPrintAgentStatus("Gerando PDF para visualização...");
-      const blob = await buildPdf();
-
-      if (
-        lastPdfUrl &&
-        lastPdfUrl.startsWith("blob:") &&
-        typeof URL !== "undefined" &&
-        URL.revokeObjectURL
-      ) {
-        URL.revokeObjectURL(lastPdfUrl);
-      }
-
-      if (typeof URL === "undefined" || !URL.createObjectURL) {
-        throw new Error("Recurso de PDF indisponível neste navegador.");
-      }
-
-      const url = URL.createObjectURL(blob);
-      setLastPdfUrl(url);
-      setPdfLink(url);
-      setPrintAgentStatus(
-        "PDF gerado. Use Abrir PDF, Salvar PDF ou Ctrl+P/Cmd+P para imprimir.",
-      );
-    } catch (error) {
-      setPrintAgentStatus(
-        error instanceof Error
-          ? error.message
-          : "Erro ao gerar PDF para mobile.",
       );
     }
   };
@@ -604,41 +533,7 @@ export default function CleverMindDashboard() {
         `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`,
       );
 
-      if (!agentEnabled) {
-        setStatus("PDF gerado para salvar. Agent está em modo manual.");
-        return;
-      }
-
-      if (!validEmail(email)) throw new Error("E-mail inválido.");
-      if (!emailOk)
-        throw new Error(
-          `Agent bloqueado. Use o e-mail autorizado: ${NOTEBOOK_EMAIL}`,
-        );
-
-      setStatus("Envio externo autorizado. Enviando via OnboardIA...");
-
-      try {
-        const sent = await sendAgent({
-          email,
-          pdfBlob: blob,
-          subject,
-          message,
-          payload: { data, result },
-          endpoint: ONBOARDIA_ENDPOINT,
-        });
-        setStatus(sent.message || "PDF enviado via OnboardIA.");
-      } catch {
-        setStatus("OnboardIA falhou. Tentando Agent padrão...");
-        const sent = await sendAgent({
-          email,
-          pdfBlob: blob,
-          subject,
-          message,
-          payload: { data, result },
-          endpoint: FALLBACK_ENDPOINT,
-        });
-        setStatus(sent.message || "PDF enviado pelo Agent padrão.");
-      }
+      setStatus("PDF gerado com sucesso");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Erro ao gerar PDF.");
     }
@@ -659,7 +554,7 @@ export default function CleverMindDashboard() {
 
   return (
     <main
-      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 pb-16 sm:p-4 pb-16`}
+      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 sm:p-4 pb-16`}
     >
       <section className="mx-auto max-w-7xl space-y-3 sm:space-y-4">
         <header
@@ -930,46 +825,12 @@ export default function CleverMindDashboard() {
                 theme={theme}
               />
             </div>
-
-            {/* <div className="mt-4 rounded-2xl border border-blue-400/30 bg-blue-500/10 p-3">
-              <label className="text-sm font-bold text-blue-200">
-                E-mail autorizado do notebook
-              </label>
-              <input
-                className="input mt-2"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-              <p
-                className={`mt-2 text-sm ${emailOk ? "text-green-300" : "text-red-300"}`}
-              >
-                {emailOk
-                  ? `Agent alinhado: ${NOTEBOOK_EMAIL}`
-                  : `Envio automático bloqueado. Use: ${NOTEBOOK_EMAIL}`}
-              </p>
-              <label className="mt-3 flex items-center gap-2 text-xs text-slate-300">
-                <input
-                  type="checkbox"
-                  disabled={!emailOk}
-                  checked={agentEnabled}
-                  onChange={(event) => setAgentEnabled(event.target.checked)}
-                />
-                Ativar Agent de envio externo
-              </label>
-            </div>*/}
-
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={gerarPdf}
                 className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg`}
               >
                 Gerar PDF
-              </button>
-              <button
-                onClick={imprimirPdfNotebook}
-                className={`w-full rounded-2xl ${theme.btnMobile} py-3 font-black text-white shadow-lg`}
-              >
-                Abrir no Mobile
               </button>
               <button
                 onClick={copiarResumo}
@@ -985,32 +846,19 @@ export default function CleverMindDashboard() {
               {status}
             </p>
             <p
-              className={`mt-2 rounded-2xl border ${theme.agentBorder} ${theme.agentBg} p-2 text-xs ${theme.agentText}`}
-            >
-              {printAgentStatus}
-            </p>
-            <p
               className={`mt-2 rounded-2xl border ${theme.shareBorder} ${theme.shareBg} p-2 text-xs ${theme.shareText}`}
             >
               {shareStatus}
             </p>
 
             {pdfLink && (
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 no-print">
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 no-print">
                 <a
                   className={`btn ${theme.btnLink}`}
                   href={pdfLink}
                   download="Resultado_AI_EXALTT.pdf"
                 >
                   Salvar PDF
-                </a>
-                <a
-                  className={`btn ${theme.btnLink}`}
-                  href={pdfLink}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Abrir PDF
                 </a>
                 {emailLink && (
                   <a className={`btn ${theme.btnLink}`} href={emailLink}>
