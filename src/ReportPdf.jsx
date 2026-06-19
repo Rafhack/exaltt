@@ -141,10 +141,15 @@ const styles = StyleSheet.create({
   },
 
   recommendationText: {
-    lineHeight: 1.5,
+    lineHeight: 1,
     color: "#334155",
   },
 });
+
+function uncaptalize(str) {
+  if (!str || !str.length) return str;
+  return str.charAt(0).toLowerCase() + str.slice(1);
+}
 
 function PdfRow({ label, value }) {
   return (
@@ -266,12 +271,10 @@ export function ReportPdf({ brand, data, result, email }) {
           <Text style={styles.recommendationTitle}>Recomendação AI</Text>
 
           <Text style={styles.recommendationText}>
-            Usar broca EXALTT HPC Ø{data.diameter} mm com geometria{" "}
-            {result.geometry.code}
-            para {result.geometry.application}
-            Estratégia ajustada para {data.depthFactor}, considerando{" "}
-            {data.machine}, refrigeração {data.coolant}e objetivo de {data.goal}
-            . A potência exibida já inclui margem de segurança de 25%.
+            {`Usar broca EXALTT HPC Ø${data.diameter} mm com geometria ${result.geometry.code} ` +
+              `para ${uncaptalize(result.geometry.application)} Estratégia ajustada para ` +
+              `${data.depthFactor}, considerando ${data.machine}, refrigeração ${uncaptalize(data.coolant)} ` +
+              `e objetivo de ${uncaptalize(data.goal)}. A potência exibida já inclui margem de segurança de 25%.`}
           </Text>
         </View>
       </Page>
