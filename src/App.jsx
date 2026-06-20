@@ -433,9 +433,16 @@ export default function CleverMindDashboard() {
                 <input
                   className="input"
                   type="number"
+                  max={20}
                   value={data.diameter}
                   onChange={(event) =>
-                    update("diameter", Number(event.target.value))
+                    update(
+                      "diameter",
+                      Number(event.target.value) > 20 ||
+                        Number(event.target.value < 2)
+                        ? 20
+                        : Number(event.target.value),
+                    )
                   }
                 />
               </Field>
@@ -602,7 +609,7 @@ export default function CleverMindDashboard() {
                 <a
                   className={`btn ${theme.btnLink}`}
                   href={pdfLink}
-                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_EXALTT-HPC-D4_${data.diameter}.pdf`}
+                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_EXALTT-HPC-Ø${data.diameter}.pdf`}
                 >
                   Salvar PDF
                 </a>
