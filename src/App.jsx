@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { THEMES, THEME_KEYS, DEFAULT_THEME, getTheme } from "./themes.js";
+import { getFnForDiameter } from "./data/fnTable.js";
 import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 
@@ -373,7 +374,12 @@ function calcAI(
   const vc = Math.round(
     base.vc * dep.vc * mac.vc * cooling * press * hard * objective,
   );
-  const fn = Number((base.fn * dep.fn * mac.fn).toFixed(3));
+  const baseFn = getFnForDiameter(
+    materials[material] ? material : "SAE 4140",
+    materials,
+    d,
+  );
+  const fn = Number((baseFn * dep.fn * mac.fn).toFixed(3));
   const rpm = Math.round((1000 * vc) / (Math.PI * d));
   const vf = Math.round(fn * rpm);
   const life = Math.round(
