@@ -214,6 +214,8 @@ export function ReportPdf({ brand, data, result, email }) {
 
             <PdfRow label="Dureza" value={`${data.hardness} HRC`} />
 
+            <PdfRow label="Número de cortes" value={`${data.cuttingEdges}`} />
+
             <PdfRow label="Broca" value={`EXALTT HPC Ø${data.diameter} mm`} />
 
             <PdfRow

@@ -79,12 +79,14 @@ function calcAI(
     coolant,
     pressure,
     goal,
+    cuttingEdges,
   },
   config,
 ) {
   const d = Number(diameter);
   const h = Number(hardness);
   const p = Number(pressure);
+  const edges = Number(cuttingEdges) || 2;
 
   if (!Number.isFinite(d) || d <= 0)
     throw new Error("Informe um diâmetro válido.");
@@ -122,7 +124,7 @@ function calcAI(
   );
   const fn = Number((baseFn * dep.fn * mac.fn).toFixed(3));
   const rpm = Math.round((1000 * vc) / (Math.PI * d));
-  const vf = Math.round(fn * rpm);
+  const vf = Math.round(fn * rpm * (edges / 2));
   const life = Math.round(
     base.life *
       dep.life *
@@ -198,6 +200,7 @@ export default function CleverMindDashboard() {
     coolant: "Interna",
     pressure: 20,
     goal: "Alta produtividade",
+    cuttingEdges: 2,
   });
   const [status, setStatus] = useState("Sistema AI pronto.");
   const [pdfLink, setPdfLink] = useState("");
@@ -447,6 +450,22 @@ export default function CleverMindDashboard() {
                 />
               </Field>
 
+              <Field label="Número de cortes" theme={theme}>
+                <select
+                  className="input"
+                  value={data.cuttingEdges}
+                  onChange={(event) =>
+                    update("cuttingEdges", Number(event.target.value))
+                  }
+                >
+                  {[2, 3, 4].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
               <div className="grid grid-cols-2 gap-2">
                 <Field label="Prof." theme={theme}>
                   <select
@@ -659,6 +678,10 @@ export default function CleverMindDashboard() {
                   value={result.materialClass}
                 />
                 <PrintRow label="Dureza" value={`${data.hardness} HRC`} />
+                <PrintRow
+                  label="Número de cortes"
+                  value={`${data.cuttingEdges}`}
+                />
                 <PrintRow
                   label="Broca"
                   value={`EXALTT HPC Ø${data.diameter} mm`}

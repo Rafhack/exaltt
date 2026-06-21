@@ -2,7 +2,7 @@ export const DEFAULT_BRAND = {
   company: "TopTools Brasil",
   line: "EXALTT",
   product: "Clever Mind – Drilling AI",
-  mode: "Modo Online",
+  mode: "Modo Backup",
   notebookEmail: "silvio@toptools.comn.br",
   onboardiaEndpoint: "/api/onboardia/pdf-agent",
   fallbackEndpoint: "/api/ai-report-agent",
