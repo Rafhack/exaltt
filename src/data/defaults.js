@@ -13,7 +13,7 @@ export const DEFAULT_BRAND = {
 
 export const DEFAULT_MATERIALS = {
   "SAE 1020": {
-    vc: 135,
+    vc: 128,
     fn: {
       mode: "table",
       table: {
@@ -37,7 +37,7 @@ export const DEFAULT_MATERIALS = {
     materialClass: "Aço carbono baixo carbono",
   },
   "SAE 1045": {
-    vc: 125,
+    vc: 120,
     fn: { mode: "proportion", proportionOf: "SAE 1020", proportionPct: 95 },
     life: 1500,
     iso: "P",
@@ -51,14 +51,14 @@ export const DEFAULT_MATERIALS = {
     materialClass: "Aço ligado beneficiado",
   },
   "SAE 8620": {
-    vc: 86,
+    vc: 90,
     fn: { mode: "proportion", proportionOf: "SAE 4140", proportionPct: 95 },
     life: 2300,
     iso: "P",
     materialClass: "Aço ligado para cementação",
   },
   "SAE 52100": {
-    vc: 75,
+    vc: 80,
     fn: { mode: "proportion", proportionOf: "SAE 1045", proportionPct: 95 },
     life: 950,
     iso: "P",
@@ -113,7 +113,7 @@ export const DEFAULT_MATERIALS = {
     materialClass: "Aço ferramenta similar D2 / alta dureza",
   },
   "Inox 304": {
-    vc: 68,
+    vc: 75,
     fn: {
       mode: "table",
       table: {
@@ -454,10 +454,13 @@ export const DEFAULT_GEOMETRIES = {
 };
 
 export const DEFAULT_DEPTHS = {
-  "3xD": { vc: 1.05, fn: 1.03, life: 1.08, risk: 99 },
-  "5xD": { vc: 1, fn: 1, life: 1, risk: 98 },
-  "8xD": { vc: 0.92, fn: 0.94, life: 0.88, risk: 91 },
-  "12xD": { vc: 0.84, fn: 0.88, life: 0.76, risk: 84 },
+  "3xD": { vc: 1.05, fn: 1.03, life: 1.08, limiter: 3, risk: 99 },
+  "5xD": { vc: 1, fn: 1, life: 1, limiter: 5, risk: 98 },
+  "8xD": { vc: 0.92, fn: 0.94, life: 0.88, limiter: 8, risk: 94 },
+  "12xD": { vc: 0.84, fn: 0.9, life: 0.86, limiter: 12, risk: 90 },
+  "16xD": { vc: 0.82, fn: 0.88, life: 0.85, limiter: 16, risk: 90 },
+  "20xD": { vc: 0.74, fn: 0.82, life: 0.82, limiter: 20, risk: 89 },
+  "25xD": { vc: 0.7, fn: 0.75, life: 0.75, limiter: 25, risk: 84 },
 };
 
 export const DEFAULT_MACHINES = {
