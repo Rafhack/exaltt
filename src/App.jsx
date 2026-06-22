@@ -185,23 +185,62 @@ function buildMessage(data, result) {
   ].join("\n");
 }
 
+// ─── Empty state ───────────────────────────────────────────────────────────────
+// The form starts fully empty — no pre-filled values — so the user must
+// explicitly choose every parameter before a calculation is produced.
+const EMPTY_DATA = {
+  material: "",
+  diameter: "",
+  hardness: "",
+  depthFactor: "",
+  depthMm: "",
+  machine: "",
+  coolant: "",
+  pressure: "",
+  goal: "",
+  cuttingEdges: "",
+};
+
+// Placeholder shown in the results panel before the user fills in the form
+const EMPTY_RESULT = {
+  vc: "—",
+  rpm: "—",
+  fn: "—",
+  vf: "—",
+  life: "—",
+  cuttingPower: "—",
+  power: "—",
+  torque: "—",
+  stability: "—",
+  iso: "—",
+  materialClass: "—",
+  isoDescription: "Preencha os campos para calcular.",
+  geometry: { code: "—", name: "—", application: "—" },
+  baseVc: "—",
+};
+
+// True once every required input has a value — only then do we attempt calcAI
+function isFormComplete(data) {
+  return (
+    data.material !== "" &&
+    data.diameter !== "" &&
+    data.hardness !== "" &&
+    data.depthFactor !== "" &&
+    data.depthMm !== "" &&
+    data.machine !== "" &&
+    data.coolant !== "" &&
+    data.pressure !== "" &&
+    data.goal !== "" &&
+    data.cuttingEdges !== ""
+  );
+}
+
 export default function CleverMindDashboard() {
   const { config, loading } = useConfig();
   const { brand, materials, depths, machines } = config;
   const { theme, themeKey, setTheme } = useTheme();
 
-  const [data, setData] = useState({
-    material: "SAE 4140",
-    diameter: 12,
-    hardness: 32,
-    depthFactor: "5xD",
-    depthMm: 60,
-    machine: "Romi D800",
-    coolant: "Interna",
-    pressure: 20,
-    goal: "Alta produtividade",
-    cuttingEdges: 2,
-  });
+  const [data, setData] = useState({ ...EMPTY_DATA });
   const [status, setStatus] = useState("Sistema AI pronto.");
   const [pdfLink, setPdfLink] = useState("");
   const [emailLink, setEmailLink] = useState("");
@@ -211,13 +250,11 @@ export default function CleverMindDashboard() {
   );
 
   const result = useMemo(() => {
+    if (!isFormComplete(data)) return EMPTY_RESULT;
     try {
       return calcAI(data, config);
     } catch {
-      return calcAI(
-        { ...data, diameter: 12, hardness: 32, pressure: 20 },
-        config,
-      );
+      return EMPTY_RESULT;
     }
   }, [data, config]);
 
@@ -225,6 +262,14 @@ export default function CleverMindDashboard() {
 
   const update = (field, value) =>
     setData((prev) => ({ ...prev, [field]: value }));
+
+  const resetForm = () => {
+    setData({ ...EMPTY_DATA });
+    setStatus("Sistema AI pronto.");
+    setPdfLink("");
+    setEmailLink("");
+    setShareStatus("Use Salvar PDF, E-mail manual ou Copiar Resumo.");
+  };
 
   const buildPdf = async () => {
     return pdf(
@@ -390,11 +435,13 @@ export default function CleverMindDashboard() {
                 </p>
                 <h2 className="text-xl font-black">Entrada AI</h2>
               </div>
-              <span
-                className={`rounded-full ${theme.topToolsBadgeBg} px-3 py-1 text-xs font-bold ${theme.topToolsBadgeText}`}
+              <button
+                type="button"
+                onClick={resetForm}
+                className={`rounded-full ${theme.topToolsBadgeBg} px-3 py-1 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80`}
               >
-                {brand.company}
-              </span>
+                Limpar campos
+              </button>
             </div>
             <div className="mt-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -404,6 +451,9 @@ export default function CleverMindDashboard() {
                     value={data.material}
                     onChange={(event) => update("material", event.target.value)}
                   >
+                    <option value="" disabled>
+                      Selecione...
+                    </option>
                     {Object.entries(materials).map(([material, info]) => (
                       <option key={material} value={material}>
                         {material} • ISO {info.iso}
@@ -415,9 +465,15 @@ export default function CleverMindDashboard() {
                   <input
                     className="input"
                     type="number"
+                    placeholder="—"
                     value={data.hardness}
                     onChange={(event) =>
-                      update("hardness", Number(event.target.value))
+                      update(
+                        "hardness",
+                        event.target.value === ""
+                          ? ""
+                          : Number(event.target.value),
+                      )
                     }
                   />
                 </Field>
@@ -438,11 +494,13 @@ export default function CleverMindDashboard() {
                   type="number"
                   min="2"
                   max="20"
+                  placeholder="—"
                   value={data.diameter}
                   onChange={(event) => {
                     update("diameter", event.target.value);
                   }}
                   onBlur={(event) => {
+                    if (event.target.value === "") return;
                     update(
                       "diameter",
                       Math.min(20, Math.max(2, Number(event.target.value))),
@@ -459,6 +517,9 @@ export default function CleverMindDashboard() {
                     update("cuttingEdges", Number(event.target.value))
                   }
                 >
+                  <option value="" disabled>
+                    Selecione...
+                  </option>
                   {[2, 3, 4].map((n) => (
                     <option key={n} value={n}>
                       {n}
@@ -476,6 +537,9 @@ export default function CleverMindDashboard() {
                       update("depthFactor", event.target.value)
                     }
                   >
+                    <option value="" disabled>
+                      Selecione...
+                    </option>
                     {Object.keys(depths).map((depth) => (
                       <option key={depth}>{depth}</option>
                     ))}
@@ -485,9 +549,15 @@ export default function CleverMindDashboard() {
                   <input
                     className="input"
                     type="number"
+                    placeholder="—"
                     value={data.depthMm}
                     onChange={(event) =>
-                      update("depthMm", Number(event.target.value))
+                      update(
+                        "depthMm",
+                        event.target.value === ""
+                          ? ""
+                          : Number(event.target.value),
+                      )
                     }
                   />
                 </Field>
@@ -499,6 +569,9 @@ export default function CleverMindDashboard() {
                   value={data.machine}
                   onChange={(event) => update("machine", event.target.value)}
                 >
+                  <option value="" disabled>
+                    Selecione...
+                  </option>
                   {Object.keys(machines).map((machine) => (
                     <option key={machine}>{machine}</option>
                   ))}
@@ -512,6 +585,9 @@ export default function CleverMindDashboard() {
                     value={data.coolant}
                     onChange={(event) => update("coolant", event.target.value)}
                   >
+                    <option value="" disabled>
+                      Selecione...
+                    </option>
                     <option>Interna</option>
                     <option>Externa</option>
                   </select>
@@ -520,9 +596,15 @@ export default function CleverMindDashboard() {
                   <input
                     className="input"
                     type="number"
+                    placeholder="—"
                     value={data.pressure}
                     onChange={(event) =>
-                      update("pressure", Number(event.target.value))
+                      update(
+                        "pressure",
+                        event.target.value === ""
+                          ? ""
+                          : Number(event.target.value),
+                      )
                     }
                   />
                 </Field>
@@ -534,6 +616,9 @@ export default function CleverMindDashboard() {
                   value={data.goal}
                   onChange={(event) => update("goal", event.target.value)}
                 >
+                  <option value="" disabled>
+                    Selecione...
+                  </option>
                   <option>Alta produtividade</option>
                   <option>Maior vida útil</option>
                   <option>Máxima estabilidade</option>
@@ -602,13 +687,15 @@ export default function CleverMindDashboard() {
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={gerarPdf}
-                className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg`}
+                disabled={!isFormComplete(data)}
+                className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 Gerar PDF
               </button>
               <button
                 onClick={copiarResumo}
-                className={`w-full rounded-2xl ${theme.btnCopy} py-3 font-black text-white shadow-lg`}
+                disabled={!isFormComplete(data)}
+                className={`w-full rounded-2xl ${theme.btnCopy} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 Copiar Resumo
               </button>
