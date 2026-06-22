@@ -260,8 +260,32 @@ export default function CleverMindDashboard() {
 
   const email = brand.notebookEmail;
 
+  // Profundidade máxima permitida (mm) = limiter do fator de profundidade × diâmetro da broca.
+  // Só é calculável quando ambos os campos dependentes já foram preenchidos.
+  const maxDepthMm = useMemo(() => {
+    const dep = depths[data.depthFactor];
+    const d = Number(data.diameter);
+    if (!dep || !Number.isFinite(dep.limiter) || !Number.isFinite(d) || d <= 0)
+      return null;
+    return dep.limiter * d;
+  }, [depths, data.depthFactor, data.diameter]);
+
   const update = (field, value) =>
     setData((prev) => ({ ...prev, [field]: value }));
+
+  // Re-clamp depthMm automatically if a change to depthFactor/diameter lowers the limit
+  // below the value the user already typed.
+  useEffect(() => {
+    if (maxDepthMm == null) return;
+    setData((prev) => {
+      if (prev.depthMm === "" || !Number.isFinite(Number(prev.depthMm)))
+        return prev;
+      const clamped = Math.min(maxDepthMm, Math.max(1, Number(prev.depthMm)));
+      return clamped === Number(prev.depthMm)
+        ? prev
+        : { ...prev, depthMm: clamped };
+    });
+  }, [maxDepthMm]);
 
   const resetForm = () => {
     setData({ ...EMPTY_DATA });
@@ -545,10 +569,15 @@ export default function CleverMindDashboard() {
                     ))}
                   </select>
                 </Field>
-                <Field label="mm" theme={theme}>
+                <Field
+                  label={maxDepthMm != null ? `mm (máx. ${maxDepthMm})` : "mm"}
+                  theme={theme}
+                >
                   <input
                     className="input"
                     type="number"
+                    min="1"
+                    max={maxDepthMm ?? undefined}
                     placeholder="—"
                     value={data.depthMm}
                     onChange={(event) =>
@@ -559,6 +588,13 @@ export default function CleverMindDashboard() {
                           : Number(event.target.value),
                       )
                     }
+                    onBlur={(event) => {
+                      if (event.target.value === "") return;
+                      let v = Number(event.target.value);
+                      v = Math.max(1, v);
+                      if (maxDepthMm != null) v = Math.min(maxDepthMm, v);
+                      update("depthMm", v);
+                    }}
                   />
                 </Field>
               </div>
