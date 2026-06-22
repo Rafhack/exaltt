@@ -436,17 +436,18 @@ export default function CleverMindDashboard() {
                 <input
                   className="input"
                   type="number"
-                  max={20}
+                  min="2"
+                  max="20"
                   value={data.diameter}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    update("diameter", event.target.value);
+                  }}
+                  onBlur={(event) => {
                     update(
                       "diameter",
-                      Number(event.target.value) > 20 ||
-                        Number(event.target.value < 2)
-                        ? 20
-                        : Number(event.target.value),
-                    )
-                  }
+                      Math.min(20, Math.max(2, Number(event.target.value))),
+                    );
+                  }}
                 />
               </Field>
 
