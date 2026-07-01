@@ -373,7 +373,8 @@ export default function CleverMindDashboard() {
 
   return (
     <main
-      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 sm:p-4 pb-16`}
+      translate="no"
+      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 sm:p-4 pb-16 notranslate`}
     >
       <section className="mx-auto max-w-7xl space-y-3 sm:space-y-4">
         <header
