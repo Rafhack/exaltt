@@ -49,7 +49,8 @@ export const THEMES = {
     sectionLabelResult: "text-cyan-300",
 
     // Inputs
-    inputBg: "#07111f",
+    inputBackground: "#07111f",
+    inputBg: "[#07111f]",
     inputBorder: "rgba(59,130,246,.25)",
     inputBorderFocus: "#00a3ff",
     inputFocusRing: "rgba(0,163,255,.16)",
@@ -128,7 +129,8 @@ export const THEMES = {
     sectionLabelInput: "text-zinc-400",
     sectionLabelResult: "text-zinc-300",
 
-    inputBg: "#111111",
+    inputBackground: "#111111",
+    inputBg: "[#111111]",
     inputBorder: "rgba(161,161,170,.2)",
     inputBorderFocus: "#a1a1aa",
     inputFocusRing: "rgba(161,161,170,.12)",
@@ -202,6 +204,7 @@ export const THEMES = {
     sectionLabelInput: "text-blue-600",
     sectionLabelResult: "text-blue-700",
 
+    inputBackground: "white",
     inputBg: "white",
     inputBorder: "rgba(100,116,139,.35)",
     inputBorderFocus: "#2563eb",
@@ -276,6 +279,7 @@ export const THEMES = {
     sectionLabelInput: "text-yellow-300",
     sectionLabelResult: "text-yellow-300",
 
+    inputBackground: "black",
     inputBg: "black",
     inputBorder: "white",
     inputBorderFocus: "#facc15",

@@ -235,10 +235,266 @@ function isFormComplete(data) {
   );
 }
 
+// ─── Lead capture ─────────────────────────────────────────────────────────────
+// Shown when the user clicks "Gerar PDF" or "Copiar Resumo".
+// Saves the lead to /api/leads before proceeding with the original action.
+
+function validateLeadPhone(v) {
+  // Validates against the raw digit string (10 or 11 digits)
+  const digits = v.replace(/\D/g, "");
+  return digits.length === 10 || digits.length === 11;
+}
+
+function validateLeadEmail(v) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+}
+
+function formatPhone(raw) {
+  // Accepts any input, strips non-digits, formats as (xx) xxxxx-xxxx
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length === 0) return "";
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10)
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function leadInputCls(hasError, theme) {
+  return [
+    "w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition",
+    `bg-${theme.inputBg} text-${theme.inputText} placeholder:text-slate-500`,
+    hasError
+      ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+      : `border-slate-700/60 focus:border-cyan-500/60 focus:ring-2 focus:ring-cyan-500/10`,
+  ].join(" ");
+}
+
+function LeadField({ label, error, theme, children }) {
+  return (
+    <label className="block">
+      <span
+        className={`mb-1.5 block text-[11px] font-black tracking-widest uppercase ${theme.kpiLabel}`}
+      >
+        {label}
+      </span>
+      {children}
+      {error && <p className="mt-1 text-[11px] text-red-400">{error}</p>}
+    </label>
+  );
+}
+
+function LeadModal({
+  theme,
+  name,
+  email,
+  phone,
+  onName,
+  onEmail,
+  onPhone,
+  onConfirm,
+  onClose,
+}) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const nameOk = name.trim().length >= 2;
+  const emailOk = validateLeadEmail(email);
+  const phoneOk = validateLeadPhone(phone);
+  const canSubmit = nameOk && emailOk && phoneOk && !saving;
+
+  const handlePhoneChange = (e) => {
+    onPhone(formatPhone(e.target.value));
+  };
+
+  const handleSubmit = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      if (API_BASE_URL) {
+        const res = await fetch(`${API_BASE_URL}/api/leads`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim().toLowerCase(),
+            phone: phone.replace(/\D/g, ""),
+            createdAt: new Date().toISOString(),
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      }
+      onConfirm();
+    } catch {
+      setError("Não foi possível salvar. Tente novamente.");
+      setSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && canSubmit) handleSubmit();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: `${theme.pageBg}`, backdropFilter: "blur(8px)" }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className={`w-full max-w-md rounded-2xl border ${theme.panelBorder} ${theme.panelBg} shadow-2xl`}
+      >
+        <div
+          className={`flex items-start justify-between border-b ${theme.kpiBorder} px-6 py-5`}
+        >
+          <div>
+            <h2 className={`text-lg font-black ${theme.kpiValue}`}>
+              Seus dados de contato
+            </h2>
+            <p className={`mt-0.5 text-xs ${theme.kpiLabel}`}>
+              Preencha para liberar o resultado completo.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className={`mt-0.5 text-xl leading-none transition ${theme.kpiLabel} hover:${theme.kpiValue}`}
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-4 px-6 py-5">
+          <LeadField
+            theme={theme}
+            label="Nome"
+            error={
+              name.length > 0 && !nameOk ? "Informe ao menos 2 caracteres." : ""
+            }
+          >
+            <input
+              className={leadInputCls(name.length > 0 && !nameOk, theme)}
+              type="text"
+              placeholder="Seu nome"
+              autoFocus
+              value={name}
+              onChange={(e) => onName(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </LeadField>
+
+          <LeadField
+            theme={theme}
+            label="E-mail"
+            error={
+              email.length > 0 && !emailOk ? "Informe um e-mail válido." : ""
+            }
+          >
+            <input
+              className={leadInputCls(email.length > 0 && !emailOk, theme)}
+              type="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => onEmail(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </LeadField>
+
+          <LeadField
+            theme={theme}
+            label="Telefone / WhatsApp"
+            error={
+              phone.length > 0 && !phoneOk
+                ? "Mínimo 10 dígitos — (xx) xxxxx-xxxx"
+                : ""
+            }
+          >
+            <input
+              className={leadInputCls(phone.length > 0 && !phoneOk, theme)}
+              type="tel"
+              placeholder="(11) 99999-9999"
+              value={phone}
+              onChange={handlePhoneChange}
+              onKeyDown={handleKeyDown}
+            />
+          </LeadField>
+
+          {error && (
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className={`w-full rounded-xl ${theme.btnPdf} py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40`}
+          >
+            {saving ? "Salvando..." : "Continuar"}
+          </button>
+
+          <p
+            className={`text-center text-[10px] leading-relaxed ${theme.kpiLabel}`}
+          >
+            Seus dados são usados apenas pela equipe TopTools Brasil para
+            acompanhamento técnico e comercial.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// useLead — wraps any action behind a one-time lead capture modal.
+// After the user submits their data once per session, subsequent calls
+// to gate() run the action directly without showing the modal again.
+// Form state is lifted here so it survives close/reopen without resetting.
+function useLead(theme) {
+  const [pending, setPending] = useState(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const SESSION_KEY = "exaltt-lead-captured";
+
+  const gate = (action) => {
+    if (sessionStorage.getItem(SESSION_KEY)) {
+      action();
+      return;
+    }
+    setPending(() => action);
+  };
+
+  const handleConfirm = () => {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    // Clear form only after successful submission
+    setName("");
+    setEmail("");
+    setPhone("");
+    if (pending) pending();
+    setPending(null);
+  };
+
+  const modal = pending ? (
+    <LeadModal
+      theme={theme}
+      name={name}
+      email={email}
+      phone={phone}
+      onName={setName}
+      onEmail={setEmail}
+      onPhone={setPhone}
+      onConfirm={handleConfirm}
+      onClose={() => setPending(null)}
+    />
+  ) : null;
+
+  return { gate, modal };
+}
+
 export default function CleverMindDashboard() {
   const { config, loading } = useConfig();
   const { brand, materials, depths, machines } = config;
   const { theme, themeKey, setTheme } = useTheme();
+  const { gate, modal } = useLead(theme);
 
   const [data, setData] = useState({ ...EMPTY_DATA });
   const [status, setStatus] = useState("Sistema AI pronto.");
@@ -470,7 +726,7 @@ export default function CleverMindDashboard() {
             </div>
             <div className="mt-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Material / Classificação ISO" theme={theme}>
+                <Field label="Material / Classe ISO" theme={theme}>
                   <select
                     className="input"
                     value={data.material}
@@ -723,14 +979,14 @@ export default function CleverMindDashboard() {
             </div>
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
-                onClick={gerarPdf}
+                onClick={() => gate(gerarPdf)}
                 disabled={!isFormComplete(data)}
                 className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
               >
                 Gerar PDF
               </button>
               <button
-                onClick={copiarResumo}
+                onClick={() => gate(copiarResumo)}
                 disabled={!isFormComplete(data)}
                 className={`w-full rounded-2xl ${theme.btnCopy} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
               >
@@ -764,7 +1020,7 @@ export default function CleverMindDashboard() {
                 )}
                 <button
                   className={`btn ${theme.btnLink}`}
-                  onClick={copiarResumo}
+                  onClick={() => gate(copiarResumo)}
                 >
                   Copiar Resumo
                 </button>
@@ -862,7 +1118,7 @@ export default function CleverMindDashboard() {
       </section>
 
       <style>{`
-        .input{width:100%;border:1px solid ${theme.inputBorder};background:${theme.inputBg};border-radius:.85rem;padding:.7rem .8rem;color:${theme.inputText};outline:none;font-size:15px}.input:focus{border-color:${theme.inputBorderFocus};box-shadow:0 0 0 3px ${theme.inputFocusRing}}
+        .input{width:100%;border:1px solid ${theme.inputBorder};background:${theme.inputBackground};border-radius:.85rem;padding:.7rem .8rem;color:${theme.inputText};outline:none;font-size:15px}.input:focus{border-color:${theme.inputBorderFocus};box-shadow:0 0 0 3px ${theme.inputFocusRing}}
       `}</style>
       <style>{`
 
@@ -874,6 +1130,7 @@ export default function CleverMindDashboard() {
           #print-area{page-break-inside:avoid}.print-area *{color:black!important}
         }
       `}</style>
+      {modal}
     </main>
   );
 }
