@@ -228,7 +228,7 @@ function calcAI(
   };
 }
 
-function buildMessage(data, result) {
+function buildMessage(data, result, recommendedDrill) {
   return [
     "Resultado AI EXALTT - Clever Mind Drilling AI",
     "",
@@ -236,7 +236,7 @@ function buildMessage(data, result) {
     `Classificação ISO: ${result.isoDescription}`,
     `Classe do material: ${result.materialClass}`,
     `Dureza: ${data.hardness} HRC`,
-    `Broca: EXALTT HPC Ø${data.diameter} mm`,
+    `Broca: ${recommendedDrill}`,
     `Geometria EXALTT: ${result.geometry.code} — ${result.geometry.name}`,
     `Aplicação da geometria: ${result.geometry.application}`,
     `Profundidade: ${data.depthFactor} / ${data.depthMm} mm`,
@@ -585,6 +585,8 @@ export default function CleverMindDashboard() {
   }, [data, config]);
 
   const email = brand.notebookEmail;
+  const recommendedDrill =
+    toolRec.tools?.[0]?.code || `Nenhuma broca EXALTT compatível`;
 
   // Profundidade máxima permitida (mm) = limiter do fator de profundidade × diâmetro da broca.
   // Só é calculável quando ambos os campos dependentes já foram preenchidos.
@@ -636,7 +638,7 @@ export default function CleverMindDashboard() {
 
   const copiarResumo = async () => {
     try {
-      const message = buildMessage(data, result);
+      const message = buildMessage(data, result, recommendedDrill);
 
       if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(message);
@@ -677,7 +679,7 @@ export default function CleverMindDashboard() {
 
       const url = URL.createObjectURL(blob);
       const subject = `Resultado AI EXALTT - ${data.material} - Ø${data.diameter}`;
-      const message = buildMessage(data, result);
+      const message = buildMessage(data, result, recommendedDrill);
 
       setLastPdfUrl(url);
       setPdfLink(url);
@@ -1030,7 +1032,7 @@ export default function CleverMindDashboard() {
               />
               <Result
                 label="Broca Recomendada"
-                value={`EXALTT HPC Ø${data.diameter}`}
+                value={recommendedDrill}
                 theme={theme}
               />
               <Result
@@ -1162,7 +1164,7 @@ export default function CleverMindDashboard() {
                 <a
                   className={`btn ${theme.btnLink}`}
                   href={pdfLink}
-                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_EXALTT-HPC-Ø${data.diameter}.pdf`}
+                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_${recommendedDrill.replace(/\s+/g, "-")}-Ø${data.diameter}.pdf`}
                 >
                   Salvar PDF
                 </a>
@@ -1216,10 +1218,7 @@ export default function CleverMindDashboard() {
                   label="Número de cortes"
                   value={`${data.cuttingEdges}`}
                 />
-                <PrintRow
-                  label="Broca"
-                  value={`EXALTT HPC Ø${data.diameter} mm`}
-                />
+                <PrintRow label="Broca" value={recommendedDrill} />
                 <PrintRow
                   label="Geometria EXALTT"
                   value={`${result.geometry.code} — ${result.geometry.name}`}
@@ -1257,7 +1256,7 @@ export default function CleverMindDashboard() {
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                 <p className="font-bold text-slate-900">Recomendação AI</p>
                 <p>
-                  Usar broca EXALTT HPC Ø{data.diameter} mm com geometria{" "}
+                  Usar broca {recommendedDrill} com geometria{" "}
                   {result.geometry.code} para {result.geometry.application}{" "}
                   Estratégia ajustada para {data.depthFactor}, considerando{" "}
                   {data.machine}, refrigeração {data.coolant} e objetivo de{" "}
