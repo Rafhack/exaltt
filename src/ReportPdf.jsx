@@ -144,6 +144,35 @@ const styles = StyleSheet.create({
     lineHeight: 1,
     color: "#334155",
   },
+
+  toolsTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  toolRow: {
+    flexDirection: "row",
+    paddingVertical: 6,
+    borderBottom: 1,
+    borderColor: "#e2e8f0",
+  },
+  mainToolCode: {
+    width: "35%",
+    fontWeight: "bold",
+    fontSize: 10,
+    color: "#34d399",
+  },
+  toolCode: {
+    width: "35%",
+    fontSize: 10,
+    color: "#020617",
+  },
+  toolDetails: {
+    width: "65%",
+    fontSize: 9,
+    color: "#64748b",
+  },
 });
 
 function uncaptalize(str) {
@@ -169,7 +198,7 @@ function PdfKpi({ label, value }) {
   );
 }
 
-export function ReportPdf({ brand, data, result, email }) {
+export function ReportPdf({ brand, data, result, email, tools = [] }) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -278,6 +307,27 @@ export function ReportPdf({ brand, data, result, email }) {
               `e objetivo de ${uncaptalize(data.goal)}. A potência exibida já inclui margem de segurança de 25%.`}
           </Text>
         </View>
+
+        {/* 3. Add the tools rendering block at the end of the page */}
+        {tools && tools.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.toolsTitle}>Ferramentas Recomendadas</Text>
+            {tools.map((tool, i) => (
+              <View key={tool.code} style={styles.toolRow}>
+                <Text style={i == 0 ? styles.mainToolCode : styles.toolCode}>
+                  {tool.code}
+                </Text>
+                <Text style={styles.toolDetails}>
+                  Ø{tool.diameter?.toFixed(2)} mm • {tool.depthRatio} •{" "}
+                  {tool.coolant === "internal"
+                    ? "Refrig. interna"
+                    : "Refrig. externa"}
+                  {tool.totalLength ? ` • L ${tool.totalLength} mm` : ""}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
       </Page>
     </Document>
   );

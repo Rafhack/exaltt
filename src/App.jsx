@@ -51,6 +51,75 @@ function useTheme() {
   return { theme, themeKey, setTheme };
 }
 
+// ─── useToolRecommendation hook ────────────────────────────────────────────────
+// Calls GET /api/tools/recommend whenever the form is complete.
+// Returns the ranked list of matching EXALTT tools from the catalog.
+// Silently returns an empty list if the API is unreachable or has no catalog.
+function useToolRecommendation(data, config) {
+  const [tools, setTools] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // 1. Evaluate form completion
+  const formComplete = isFormComplete(data);
+
+  useEffect(() => {
+    // 2. Use the evaluated variable
+    if (!formComplete || !API_BASE_URL) {
+      setTools([]);
+      return;
+    }
+
+    const mat = config.materials[data.material];
+    const materialCode = mat?.materialCode ?? "";
+    const coolant =
+      data.coolant === "Interna"
+        ? "internal"
+        : data.coolant === "Externa"
+          ? "external"
+          : "";
+
+    const params = new URLSearchParams({ limit: 5 });
+    if (data.diameter) params.set("diameter", data.diameter);
+    if (data.depthFactor) params.set("depthRatio", data.depthFactor);
+    if (materialCode) params.set("material", materialCode);
+    if (coolant) params.set("coolant", coolant);
+
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    fetch(`${API_BASE_URL}/api/tools/recommend?${params}`, {
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((body) => {
+        setTools(body.tools ?? []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        setTools([]);
+        setError("Catálogo de ferramentas indisponível.");
+        setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [
+    data.material,
+    data.diameter,
+    data.depthFactor,
+    data.coolant,
+    config.materials,
+    formComplete, // 3. Add to dependencies
+  ]);
+
+  return { tools, loading, error };
+}
+
 function recommendExalttGeometry(material, iso, geometries) {
   const g = geometries;
   const byIso = Object.values(g).find((v) => v.iso?.includes(iso));
@@ -497,6 +566,7 @@ export default function CleverMindDashboard() {
   const { gate, modal } = useLead(theme);
 
   const [data, setData] = useState({ ...EMPTY_DATA });
+  const toolRec = useToolRecommendation(data, config);
   const [status, setStatus] = useState("Sistema AI pronto.");
   const [pdfLink, setPdfLink] = useState("");
   const [emailLink, setEmailLink] = useState("");
@@ -553,7 +623,14 @@ export default function CleverMindDashboard() {
 
   const buildPdf = async () => {
     return pdf(
-      <ReportPdf brand={brand} data={data} result={result} email={email} />,
+      // Pass the tools array from the toolRec hook
+      <ReportPdf
+        brand={brand}
+        data={data}
+        result={result}
+        email={email}
+        tools={toolRec.tools}
+      />,
     ).toBlob();
   };
 
@@ -977,6 +1054,82 @@ export default function CleverMindDashboard() {
                 theme={theme}
               />
             </div>
+
+            {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
+            {isFormComplete(data) && (
+              <div
+                className={`mt-4 rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4`}
+              >
+                <p
+                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
+                >
+                  FERRAMENTAS EXALTT RECOMENDADAS
+                </p>
+                {toolRec.loading && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className="h-4 w-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
+                    <span className={`text-xs ${theme.kpiLabel}`}>
+                      Buscando ferramentas…
+                    </span>
+                  </div>
+                )}
+                {!toolRec.loading && toolRec.error && (
+                  <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
+                    {toolRec.error}
+                  </p>
+                )}
+                {!toolRec.loading &&
+                  !toolRec.error &&
+                  toolRec.tools.length === 0 && (
+                    <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
+                      Nenhuma ferramenta encontrada no catálogo para esta
+                      configuração.
+                    </p>
+                  )}
+                {!toolRec.loading && toolRec.tools.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {toolRec.tools.map((tool, i) => (
+                      <div
+                        key={tool.code}
+                        className={`flex items-center gap-3 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
+                      >
+                        {i === 0 && (
+                          <span
+                            className={`shrink-0 rounded-full ${theme.calcBadgeBg} border ${theme.calcBadgeBorder} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
+                          >
+                            ★ 1ª opção
+                          </span>
+                        )}
+                        <span
+                          className={`font-black font-mono text-sm ${i === 0 ? theme.calcBadgeText : theme.resultValue}`}
+                        >
+                          {tool.code}
+                        </span>
+                        <span className={`text-xs ${theme.kpiLabel}`}>
+                          Ø{tool.diameter?.toFixed(2)} mm
+                        </span>
+                        <span className={`text-xs ${theme.kpiLabel}`}>
+                          {tool.depthRatio}
+                        </span>
+                        <span className={`text-xs ${theme.kpiLabel}`}>
+                          {tool.coolant === "internal"
+                            ? "Refrig. interna"
+                            : tool.coolant === "external"
+                              ? "Refrig. externa"
+                              : ""}
+                        </span>
+                        {tool.totalLength && (
+                          <span className={`ml-auto text-xs ${theme.kpiLabel}`}>
+                            L {tool.totalLength} mm
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
               <button
                 onClick={() => gate(gerarPdf)}
