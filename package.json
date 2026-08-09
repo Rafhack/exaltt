@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predeploy": "npm run build && cp CNAME build/CNAME",
     "dev": "vite --host",
     "build": "vite build",
     "deploy": "gh-pages -d dist",
