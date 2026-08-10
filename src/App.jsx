@@ -71,7 +71,7 @@ function useToolRecommendation(data, config) {
     }
 
     const mat = config.materials[data.material];
-    const materialCode = mat?.materialCode ?? "";
+    const materialISO = mat?.iso ?? "";
     const coolant =
       data.coolant === "Interna"
         ? "internal"
@@ -82,7 +82,7 @@ function useToolRecommendation(data, config) {
     const params = new URLSearchParams({ limit: 5 });
     if (data.diameter) params.set("diameter", data.diameter);
     if (data.depthFactor) params.set("depthRatio", data.depthFactor);
-    if (materialCode) params.set("material", materialCode);
+    if (materialISO) params.set("isoClass", materialISO);
     if (coolant) params.set("coolant", coolant);
 
     const controller = new AbortController();
