@@ -1093,7 +1093,7 @@ export default function CleverMindDashboard() {
                     {toolRec.tools.map((tool, i) => (
                       <div
                         key={tool.code}
-                        className={`flex items-center gap-3 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
+                        className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
                       >
                         {i === 0 && (
                           <span
@@ -1121,7 +1121,7 @@ export default function CleverMindDashboard() {
                               : ""}
                         </span>
                         {tool.totalLength && (
-                          <span className={`ml-auto text-xs ${theme.kpiLabel}`}>
+                          <span className={`sm:ml-auto text-xs ${theme.kpiLabel}`}>
                             L {tool.totalLength} mm
                           </span>
                         )}
@@ -1218,7 +1218,10 @@ export default function CleverMindDashboard() {
                   label="Número de cortes"
                   value={`${data.cuttingEdges}`}
                 />
-                <PrintRow label="Broca" value={recommendedDrill} />
+                <PrintRow
+                  label="Broca"
+                  value={recommendedDrill}
+                />
                 <PrintRow
                   label="Geometria EXALTT"
                   value={`${result.geometry.code} — ${result.geometry.name}`}
