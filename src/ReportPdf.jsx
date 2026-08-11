@@ -5,13 +5,23 @@ import {
   View,
   Image,
   StyleSheet,
+  Font,
 } from "@react-pdf/renderer";
+
+Font.register({
+  family: "Changa",
+  fonts: [
+    { src: "/fonts/Changa-Regular.ttf", fontWeight: 400 },
+    { src: "/fonts/Changa-Bold.ttf", fontWeight: 700 },
+  ],
+});
 
 const styles = StyleSheet.create({
   page: {
     padding: 28,
     backgroundColor: "#ffffff",
     fontSize: 10,
+    fontFamily: "Changa",
     color: "#0f172a",
   },
 
@@ -76,7 +86,7 @@ const styles = StyleSheet.create({
     width: "48%",
     border: 1,
     borderColor: "#e2e8f0",
-    borderRadius: 10,
+    borderRadius: 0,
     padding: 10,
   },
 
@@ -111,7 +121,7 @@ const styles = StyleSheet.create({
     border: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
-    borderRadius: 10,
+    borderRadius: 0,
     padding: 10,
   },
 
@@ -131,7 +141,7 @@ const styles = StyleSheet.create({
     border: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
-    borderRadius: 12,
+    borderRadius: 0,
     padding: 14,
   },
 
@@ -213,7 +223,8 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
 
             <View style={styles.headerContent}>
               <Text style={styles.brand}>
-                {brand.company} • {brand.line}
+                {brand.company}
+                {brand.line.length ? ` • ${brand.line}` : ``}
               </Text>
 
               <Text style={styles.title}>{brand.product}</Text>

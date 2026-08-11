@@ -5,7 +5,7 @@ import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 import { buildDefaultConfig } from "./data/defaults.js";
 
-// ─── CONFIG FALLBACK (used while loading or when API is unreachable) ──────────
+// ─── CONFIG FALLBACK ───────────────────────────────────────────────────────────
 const FALLBACK_CONFIG = buildDefaultConfig();
 
 // ─── API URL ───────────────────────────────────────────────────────────────────
@@ -23,7 +23,9 @@ function useConfig() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data) => setConfig({ ...FALLBACK_CONFIG, ...data }))
+      .then((data) => {
+        setConfig({ ...FALLBACK_CONFIG, ...data });
+      })
       .catch((err) =>
         console.warn(
           "[useConfig] Could not reach API, using fallback:",
@@ -270,7 +272,7 @@ function formatPhone(raw) {
 
 function leadInputCls(hasError, theme) {
   return [
-    "w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition",
+    "w-full border px-3 py-2.5 text-sm outline-none transition",
     `bg-${theme.inputBg} text-${theme.inputText} placeholder:text-slate-500`,
     hasError
       ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
@@ -350,7 +352,7 @@ function LeadModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className={`w-full max-w-md rounded-2xl border ${theme.panelBorder} ${theme.panelBg} shadow-2xl`}
+        className={`w-full max-w-md border ${theme.panelBorder} ${theme.panelBg} shadow-2xl`}
       >
         <div
           className={`flex items-start justify-between border-b ${theme.kpiBorder} px-6 py-5`}
@@ -427,7 +429,7 @@ function LeadModal({
           </LeadField>
 
           {error && (
-            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            <p className="border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
               {error}
             </p>
           )}
@@ -435,7 +437,7 @@ function LeadModal({
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`w-full rounded-xl ${theme.btnPdf} py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40`}
+            className={`w-full ${theme.btnPdf} py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40`}
           >
             {saving ? "Salvando..." : "Continuar"}
           </button>
@@ -601,67 +603,94 @@ export default function CleverMindDashboard() {
   return (
     <main
       translate="no"
-      className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 sm:p-4 pb-16 notranslate`}
+      className={`min-h-screen ${theme.pageBg} ${theme.pageText} pb-16 notranslate`}
     >
-      <section className="mx-auto max-w-7xl flex flex-col gap-4 sm:gap-6">
-        <header
-          className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
-        >
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              {brand.logoUrl && (
-                <img
-                  src={brand.logoUrl}
-                  alt={brand.company}
-                  className="h-10 max-w-[100px] self-start sm:self-center object-contain sm:h-14 sm:max-w-[140px] md:h-16 md:max-w-[160px]"
-                  style={{ filter: theme.logoFilter }}
+      {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
+      <header className="w-full bg-[#E3CE3D] px-40 py-5 sm:px-80 sm:py-6 flex items-center justify-between shadow-md z-10 relative">
+        <div className="flex items-center gap-4 sm:gap-6">
+          {brand.logoUrl && (
+            <img
+              src={brand.logoUrl}
+              alt={brand.company}
+              className="h-10 sm:h-12 object-contain"
+              style={{ filter: "brightness(0)" }}
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Custom Theme Selector mimicking Language dropdown */}
+          <div className="relative inline-flex items-center gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
+            <svg
+              className="w-5 h-5 text-black"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.61-.23-1.17-.61-1.61-.31-.35-.5-.81-.5-1.28 0-1.04.85-1.89 1.89-1.89h1.73c2.75 0 4.99-2.24 4.99-4.99C22 7.03 17.52 2 12 2zm-4.5 9c-.83 0-1.5-.67-1.5-1.5S6.67 8 7.5 8 9 8.67 9 9.5 8.33 11 7.5 11zm3-3c-.83 0-1.5-.67-1.5-1.5S9.67 5 10.5 5 12 5.67 12 6.5 11.33 8 10.5 8zm3 0c-.83 0-1.5-.67-1.5-1.5S12.67 5 13.5 5 15 5.67 15 6.5 14.33 8 13.5 8zm3 3c-.83 0-1.5-.67-1.5-1.5S15.67 8 16.5 8 18 8.67 18 9.5 17.33 11 16.5 11z" />
+            </svg>
+            <select
+              value={themeKey}
+              onChange={(e) => setTheme(e.target.value)}
+              className="appearance-none bg-transparent outline-none cursor-pointer pr-5 font-black uppercase text-black"
+            >
+              {THEME_KEYS.map((k) => (
+                <option key={k} value={k} className="text-black bg-white">
+                  {THEMES[k].label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-0 flex items-center">
+              <svg
+                className="h-4 w-4 text-black"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="3"
+                  d="M19 9l-7 7-7-7"
                 />
-              )}
-              <div className="min-w-0">
-                <div
-                  className={`inline-flex max-w-full items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
-                >
-                  <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
-                  <span className="truncate">
-                    {brand.company}
-                    {brand.line.length ? ` • ${brand.line}` : ``}
-                  </span>
-                </div>
-                <h1 className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:text-3xl md:text-4xl">
-                  {brand.product}
-                </h1>
-                <p
-                  className={`mt-2 text-xs leading-relaxed sm:text-sm ${theme.pageText}`}
-                >
-                  Aplicativo técnico para recomendação de parâmetros de furação,
-                  relatório PDF e suporte ao time comercial/aplicação.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 md:items-end">
-              <span
-                className={`self-start rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-4 py-2 text-xs font-bold ${theme.modeBadgeText} md:self-auto`}
-              >
-                {brand.mode}
-              </span>
-              <select
-                value={themeKey}
-                onChange={(e) => setTheme(e.target.value)}
-                className={`w-full rounded-xl border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} ${theme.brandBadgeText} px-3 py-2 text-xs font-bold outline-none cursor-pointer sm:w-auto`}
-              >
-                {THEME_KEYS.map((k) => (
-                  <option key={k} value={k}>
-                    {THEMES[k].label}
-                  </option>
-                ))}
-              </select>
+              </svg>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
+
+      {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8 mt-2">
+        {/* HERO SECTION */}
+        <div className="mb-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div
+              className={`inline-flex items-center gap-2 border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+            >
+              <span className={`h-2 w-2 ${theme.brandDot}`} />
+              <span className="truncate">
+                {brand.company}
+                {brand.line.length ? ` • ${brand.line}` : ``}
+              </span>
+            </div>
+            <span
+              className={`inline-block border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-3 py-1 text-xs font-bold ${theme.modeBadgeText}`}
+            >
+              {brand.mode}
+            </span>
+          </div>
+          <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl md:text-5xl">
+            {brand.product}
+          </h1>
+          <p
+            className={`mt-3 text-sm sm:text-base leading-relaxed ${theme.pageText} max-w-3xl`}
+          >
+            Aplicativo técnico para recomendação de parâmetros de furação,
+            relatório PDF e suporte ao time comercial/aplicação.
+          </p>
+        </div>
 
         {/* ── ENTRADA DE DADOS ─────────────────────────────────────── */}
         <div
-          className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5`}
+          className={`border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-6`}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -675,12 +704,12 @@ export default function CleverMindDashboard() {
             <button
               type="button"
               onClick={resetForm}
-              className={`rounded-full ${theme.topToolsBadgeBg} px-4 py-1.5 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
+              className={`border ${theme.brandBadgeBorder} ${theme.topToolsBadgeBg} px-4 py-2 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
             >
               Limpar campos
             </button>
           </div>
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="sm:col-span-2">
               <Field
                 label="Material a ser Usinado de acordo com classificação ISO"
@@ -866,12 +895,12 @@ export default function CleverMindDashboard() {
               </select>
             </Field>
           </div>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-8 flex justify-end">
             <button
               type="button"
               onClick={() => setSubmittedData(data)}
               disabled={!isFormComplete(data)}
-              className={`rounded-2xl ${theme.btnPdf} px-10 py-3.5 font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40`}
+              className={`w-full sm:w-auto ${theme.btnPdf} px-10 py-3.5 font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40`}
             >
               Calcular
             </button>
@@ -882,7 +911,7 @@ export default function CleverMindDashboard() {
           <>
             {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
             <div
-              className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-5`}
+              className={`border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
             >
               <p
                 className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
@@ -890,7 +919,7 @@ export default function CleverMindDashboard() {
                 FERRAMENTAS EXALTT RECOMENDADAS
               </p>
               {toolRec.loading && (
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-4 flex items-center gap-2">
                   <div className="h-4 w-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
                   <span className={`text-xs ${theme.kpiLabel}`}>
                     Buscando ferramentas…
@@ -898,28 +927,28 @@ export default function CleverMindDashboard() {
                 </div>
               )}
               {!toolRec.loading && toolRec.error && (
-                <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
+                <p className={`mt-4 text-xs ${theme.kpiLabel}`}>
                   {toolRec.error}
                 </p>
               )}
               {!toolRec.loading &&
                 !toolRec.error &&
                 toolRec.tools.length === 0 && (
-                  <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
+                  <p className={`mt-4 text-xs ${theme.kpiLabel}`}>
                     Nenhuma ferramenta encontrada no catálogo para esta
                     configuração.
                   </p>
                 )}
               {!toolRec.loading && toolRec.tools.length > 0 && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-4 space-y-2">
                   {toolRec.tools.map((tool, i) => (
                     <div
                       key={tool.code}
-                      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-2 border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-4 py-3`}
                     >
                       {i === 0 && (
                         <span
-                          className={`shrink-0 rounded-full ${theme.calcBadgeBg} border ${theme.calcBadgeBorder} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
+                          className={`shrink-0 border ${theme.calcBadgeBorder} ${theme.calcBadgeBg} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
                         >
                           ★ 1ª opção
                         </span>
@@ -958,7 +987,7 @@ export default function CleverMindDashboard() {
             {/* ── PRINT AREA ─────────────────────────────────────── */}
             <div
               id="print-area"
-              className="rounded-2xl border border-slate-700 bg-white p-3 text-slate-950 print-area shadow-lg sm:p-5"
+              className="border border-slate-700 bg-white p-4 text-slate-950 print-area shadow-lg sm:p-6"
             >
               <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
@@ -979,7 +1008,7 @@ export default function CleverMindDashboard() {
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <PrintRow
                   label="Material a ser Usinado"
                   value={`${submittedData.material} • ${result.isoDescription}`}
@@ -1016,8 +1045,8 @@ export default function CleverMindDashboard() {
                 />
               </div>
 
-              <h3 className="mt-6 text-lg font-black">Resultados de Corte</h3>
-              <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
+              <h3 className="mt-8 text-lg font-black">Resultados de Corte</h3>
+              <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                 <PrintKpi
                   label="Velocidade de Corte (VC)"
                   value={`${result.vc} m/min`}
@@ -1036,8 +1065,8 @@ export default function CleverMindDashboard() {
                 <PrintKpi label="Torque" value={`${result.torque} Nm`} />
               </div>
 
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <p className="font-bold text-slate-900">Recomendação</p>
+              <div className="mt-8 border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
+                <p className="font-bold text-slate-900 mb-1">Recomendação</p>
                 <p>
                   Usar broca {recommendedDrill} com geometria{" "}
                   {result.geometry.code} para {result.geometry.application}{" "}
@@ -1051,11 +1080,11 @@ export default function CleverMindDashboard() {
             </div>
 
             {/* ── PDF BUTTON ─────────────────────────────────────── */}
-            <div className="mt-2 mb-10 flex flex-col items-center">
+            <div className="mt-4 mb-10 flex flex-col items-center">
               <button
                 onClick={() => gate(gerarPdf)}
                 disabled={generatingPdf}
-                className={`w-full max-w-md rounded-2xl ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`w-full max-w-md ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {generatingPdf ? "Gerando PDF..." : "Gerar PDF"}
               </button>
@@ -1065,15 +1094,19 @@ export default function CleverMindDashboard() {
       </section>
 
       <style>{`
-        .input{width:100%;border:1px solid ${theme.inputBorder};background:${theme.inputBackground};border-radius:.85rem;padding:.7rem .8rem;color:${theme.inputText};outline:none;font-size:15px}.input:focus{border-color:${theme.inputBorderFocus};box-shadow:0 0 0 3px ${theme.inputFocusRing}}
+        .input { width:100%; border:1px solid ${theme.inputBorder}; background:${theme.inputBackground}; border-radius:0; padding:.7rem .8rem; color:${theme.inputText}; outline:none; font-size:15px; }
+        .input:focus { border-color:${theme.inputBorderFocus}; box-shadow:0 0 0 3px ${theme.inputFocusRing}; }
       `}</style>
       <style>{`
-        .btn{border-radius:.85rem;padding:.75rem;text-align:center;font-weight:800;color:white;box-shadow:0 8px 18px rgba(0,0,0,.22)}
-        button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-        @media print{
-          body{background:white!important}.no-print, header, section > section:first-of-type, .rounded-3xl.border.border-slate-800.bg-slate-900.p-6:first-child{display:none!important}
-          main{background:white!important;color:black!important;padding:0!important}.print-area{display:block!important;border:none!important;box-shadow:none!important;margin:0!important;padding:20px!important;color:black!important}
-          #print-area{page-break-inside:avoid}.print-area *{color:black!important}
+        .btn { border-radius:0; padding:.75rem; text-align:center; font-weight:800; color:white; box-shadow:0 8px 18px rgba(0,0,0,.22); }
+        button, a { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+        @media print {
+          body { background:white!important; }
+          .no-print, header, section > section:first-of-type, .border.border-slate-800.bg-slate-900.p-6:first-child { display:none!important; }
+          main { background:white!important; color:black!important; padding:0!important; }
+          .print-area { display:block!important; border:none!important; box-shadow:none!important; margin:0!important; padding:20px!important; color:black!important; }
+          #print-area { page-break-inside:avoid; }
+          .print-area * { color:black!important; }
         }
       `}</style>
       {modal}
@@ -1094,7 +1127,7 @@ function Field({ label, children, theme }) {
 
 function PrintRow({ label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 p-3">
+    <div className="border border-slate-200 p-3">
       <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
       <p className="mt-1 font-bold text-slate-950">{value}</p>
     </div>
@@ -1103,7 +1136,7 @@ function PrintRow({ label, value }) {
 
 function PrintKpi({ label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div className="border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs font-bold text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-black text-slate-950">{value}</p>
     </div>
