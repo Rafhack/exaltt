@@ -525,7 +525,6 @@ export default function CleverMindDashboard() {
     }
   }, [submittedData, config]);
 
-  const email = brand.notebookEmail;
   const recommendedDrill =
     toolRec.tools?.[0]?.code || `Nenhuma broca EXALTT compatível`;
 
@@ -980,9 +979,9 @@ export default function CleverMindDashboard() {
                       </span>
                       <span className={`text-xs ${theme.kpiLabel}`}>
                         {tool.coolant === "internal"
-                          ? "Refrig. interna"
+                          ? "Refrigeração interna"
                           : tool.coolant === "external"
-                            ? "Refrig. externa"
+                            ? "Refrigeração externa"
                             : ""}
                       </span>
                       {tool.totalLength && (
