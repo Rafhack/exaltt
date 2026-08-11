@@ -199,6 +199,9 @@ function PdfKpi({ label, value }) {
 }
 
 export function ReportPdf({ brand, data, result, email, tools = [] }) {
+  const recommendedDrill =
+    tools?.[0]?.code || "Nenhuma broca EXALTT compatível";
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -216,7 +219,7 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
               <Text style={styles.title}>{brand.product}</Text>
 
               <Text style={styles.subtitle}>
-                Resultado AI para visualização e impressão
+                Resultado para visualização e impressão
               </Text>
             </View>
           </View>
@@ -235,7 +238,7 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
         <View style={styles.section}>
           <View style={styles.grid}>
             <PdfRow
-              label="Material"
+              label="Material a ser Usinado"
               value={`${data.material} • ${result.isoDescription}`}
             />
 
@@ -245,7 +248,7 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
 
             <PdfRow label="Número de cortes" value={`${data.cuttingEdges}`} />
 
-            <PdfRow label="Broca" value={`EXALTT HPC Ø${data.diameter} mm`} />
+            <PdfRow label="Broca" value={recommendedDrill} />
 
             <PdfRow
               label="Geometria EXALTT"
@@ -277,44 +280,48 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
           <Text style={styles.resultsTitle}>Resultados de Corte</Text>
 
           <View style={styles.kpiGrid}>
-            <PdfKpi label="Vc" value={`${result.vc} m/min`} />
+            <PdfKpi
+              label="Velocidade de Corte (VC)"
+              value={`${result.vc} m/min`}
+            />
 
-            <PdfKpi label="RPM" value={result.rpm} />
+            <PdfKpi label="RPM / N" value={result.rpm} />
 
-            <PdfKpi label="fn" value={`${result.fn} mm/rev`} />
+            <PdfKpi
+              label="Avanço por volta (FN)"
+              value={`${result.fn} mm/rev`}
+            />
 
-            <PdfKpi label="Vf" value={`${result.vf} mm/min`} />
+            <PdfKpi label="Avanço (VF)" value={`${result.vf} mm/min`} />
 
-            <PdfKpi label="Vida" value={`${result.life} furos`} />
+            <PdfKpi label="Vida útil estimada" value={`${result.life} furos`} />
 
-            <PdfKpi label="Potência +25%" value={`${result.power} kW`} />
+            <PdfKpi label="Potência" value={`${result.power} kW`} />
 
             <PdfKpi label="Torque" value={`${result.torque} Nm`} />
-
-            <PdfKpi label="Score" value={`${result.stability}%`} />
           </View>
         </View>
 
         {/* RECOMMENDATION */}
 
         <View style={styles.recommendation}>
-          <Text style={styles.recommendationTitle}>Recomendação AI</Text>
+          <Text style={styles.recommendationTitle}>Recomendação</Text>
 
           <Text style={styles.recommendationText}>
-            {`Usar broca EXALTT HPC Ø${data.diameter} mm com geometria ${result.geometry.code} ` +
+            {`Usar broca ${recommendedDrill} com geometria ${result.geometry.code} ` +
               `para ${uncaptalize(result.geometry.application)} Estratégia ajustada para ` +
               `${data.depthFactor}, considerando ${data.machine}, refrigeração ${uncaptalize(data.coolant)} ` +
               `e objetivo de ${uncaptalize(data.goal)}. A potência exibida já inclui margem de segurança de 25%.`}
           </Text>
         </View>
 
-        {/* 3. Add the tools rendering block at the end of the page */}
+        {/* FERRAMENTAS */}
         {tools && tools.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.toolsTitle}>Ferramentas Recomendadas</Text>
             {tools.map((tool, i) => (
               <View key={tool.code} style={styles.toolRow}>
-                <Text style={i == 0 ? styles.mainToolCode : styles.toolCode}>
+                <Text style={i === 0 ? styles.mainToolCode : styles.toolCode}>
                   {tool.code}
                 </Text>
                 <Text style={styles.toolDetails}>

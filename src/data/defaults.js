@@ -1,7 +1,7 @@
 export const DEFAULT_BRAND = {
   company: "TopTools Brasil",
   line: "EXALTT",
-  product: "Clever Mind – Drilling AI",
+  product: "SMARTT - Furação",
   mode: "Modo Backup",
   notebookEmail: "silvio@toptools.comn.br",
   onboardiaEndpoint: "/api/onboardia/pdf-agent",
@@ -465,7 +465,7 @@ export const DEFAULT_DEPTHS = {
 
 export const DEFAULT_MACHINES = {
   "Romi D800": { vc: 1, fn: 1, stability: 98 },
-  "HASS VF-5-50XT": { vc: 1.03, fn: 1.02, stability: 97 },
+  "HAAS VF-5-50XT": { vc: 1.03, fn: 1.02, stability: 97 },
   "Fanuc Robodrill D14Mi": { vc: 1.03, fn: 1.02, stability: 97 },
   "Fanuc Robodrill D21Mi": { vc: 1.04, fn: 1.03, stability: 98 },
   "Brother Speedio R450-X": { vc: 1.06, fn: 1.04, stability: 99 },

@@ -5,14 +5,8 @@ import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 import { buildDefaultConfig } from "./data/defaults.js";
 
-// ─── FIX MACHINE TYPO & CONFIG FALLBACK ────────────────────────────────────────
-const rawFallback = buildDefaultConfig();
-if (rawFallback.machines && rawFallback.machines["HASS VF-5-50XT"]) {
-  rawFallback.machines["HAAS VF-5-50XT"] =
-    rawFallback.machines["HASS VF-5-50XT"];
-  delete rawFallback.machines["HASS VF-5-50XT"];
-}
-const FALLBACK_CONFIG = rawFallback;
+// ─── CONFIG FALLBACK (used while loading or when API is unreachable) ──────────
+const FALLBACK_CONFIG = buildDefaultConfig();
 
 // ─── API URL ───────────────────────────────────────────────────────────────────
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -29,15 +23,7 @@ function useConfig() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data) => {
-        const merged = { ...FALLBACK_CONFIG, ...data };
-        // Programmatic fix for API data if it still sends the typo
-        if (merged.machines && merged.machines["HASS VF-5-50XT"]) {
-          merged.machines["HAAS VF-5-50XT"] = merged.machines["HASS VF-5-50XT"];
-          delete merged.machines["HASS VF-5-50XT"];
-        }
-        setConfig(merged);
-      })
+      .then((data) => setConfig({ ...FALLBACK_CONFIG, ...data }))
       .catch((err) =>
         console.warn(
           "[useConfig] Could not reach API, using fallback:",
