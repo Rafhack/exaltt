@@ -507,6 +507,15 @@ export default function CleverMindDashboard() {
 
   const toolRec = useToolRecommendation(submittedData, config);
 
+  // Determine if the user has changed the form parameters after calculating.
+  const isDirty = useMemo(() => {
+    return (
+      submittedData &&
+      isFormComplete(data) &&
+      JSON.stringify(data) !== JSON.stringify(submittedData)
+    );
+  }, [data, submittedData]);
+
   const result = useMemo(() => {
     if (!submittedData || !isFormComplete(submittedData)) return null;
     try {
@@ -895,7 +904,13 @@ export default function CleverMindDashboard() {
               </select>
             </Field>
           </div>
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex flex-col sm:flex-row items-end sm:items-center justify-end gap-4">
+            {isDirty && (
+              <p className="text-xs font-bold text-amber-500 animate-pulse text-right sm:text-left">
+                ⚠️ Parâmetros alterados. Clique em Calcular para atualizar os
+                resultados.
+              </p>
+            )}
             <button
               type="button"
               onClick={() => setSubmittedData(data)}
@@ -908,7 +923,7 @@ export default function CleverMindDashboard() {
         </div>
 
         {submittedData && result && (
-          <>
+          <div className="fade-in flex flex-col gap-4 sm:gap-6">
             {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
             <div
               className={`border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
@@ -927,20 +942,20 @@ export default function CleverMindDashboard() {
                 </div>
               )}
               {!toolRec.loading && toolRec.error && (
-                <p className={`mt-4 text-xs ${theme.kpiLabel}`}>
+                <p className={`fade-in mt-4 text-xs ${theme.kpiLabel}`}>
                   {toolRec.error}
                 </p>
               )}
               {!toolRec.loading &&
                 !toolRec.error &&
                 toolRec.tools.length === 0 && (
-                  <p className={`mt-4 text-xs ${theme.kpiLabel}`}>
+                  <p className={`fade-in mt-4 text-xs ${theme.kpiLabel}`}>
                     Nenhuma ferramenta encontrada no catálogo para esta
                     configuração.
                   </p>
                 )}
               {!toolRec.loading && toolRec.tools.length > 0 && (
-                <div className="mt-4 space-y-2">
+                <div className="fade-in mt-4 space-y-2">
                   {toolRec.tools.map((tool, i) => (
                     <div
                       key={tool.code}
@@ -1089,13 +1104,21 @@ export default function CleverMindDashboard() {
                 {generatingPdf ? "Gerando PDF..." : "Gerar PDF"}
               </button>
             </div>
-          </>
+          </div>
         )}
       </section>
 
       <style>{`
         .input { width:100%; border:1px solid ${theme.inputBorder}; background:${theme.inputBackground}; border-radius:0; padding:.7rem .8rem; color:${theme.inputText}; outline:none; font-size:15px; }
         .input:focus { border-color:${theme.inputBorderFocus}; box-shadow:0 0 0 3px ${theme.inputFocusRing}; }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
       `}</style>
       <style>{`
         .btn { border-radius:0; padding:.75rem; text-align:center; font-weight:800; color:white; box-shadow:0 8px 18px rgba(0,0,0,.22); }
