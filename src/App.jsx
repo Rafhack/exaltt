@@ -5,27 +5,39 @@ import { pdf } from "@react-pdf/renderer";
 import { ReportPdf } from "./ReportPdf";
 import { buildDefaultConfig } from "./data/defaults.js";
 
-// ─── CONFIG FALLBACK (used while loading or when API is unreachable) ──────────
-const FALLBACK_CONFIG = buildDefaultConfig();
+// ─── FIX MACHINE TYPO & CONFIG FALLBACK ────────────────────────────────────────
+const rawFallback = buildDefaultConfig();
+if (rawFallback.machines && rawFallback.machines["HASS VF-5-50XT"]) {
+  rawFallback.machines["HAAS VF-5-50XT"] =
+    rawFallback.machines["HASS VF-5-50XT"];
+  delete rawFallback.machines["HASS VF-5-50XT"];
+}
+const FALLBACK_CONFIG = rawFallback;
 
 // ─── API URL ───────────────────────────────────────────────────────────────────
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 // ─── useConfig hook ────────────────────────────────────────────────────────────
-// Fetches config from the REST API. Falls back to FALLBACK_CONFIG on error
-// or when VITE_API_BASE_URL is not set (pure offline mode).
 function useConfig() {
   const [config, setConfig] = useState(FALLBACK_CONFIG);
   const [loading, setLoading] = useState(!!API_BASE_URL);
 
   useEffect(() => {
-    if (!API_BASE_URL) return; // no API configured — use fallback silently
+    if (!API_BASE_URL) return;
     fetch(`${API_BASE_URL}/api/config`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((data) => setConfig({ ...FALLBACK_CONFIG, ...data }))
+      .then((data) => {
+        const merged = { ...FALLBACK_CONFIG, ...data };
+        // Programmatic fix for API data if it still sends the typo
+        if (merged.machines && merged.machines["HASS VF-5-50XT"]) {
+          merged.machines["HAAS VF-5-50XT"] = merged.machines["HASS VF-5-50XT"];
+          delete merged.machines["HASS VF-5-50XT"];
+        }
+        setConfig(merged);
+      })
       .catch((err) =>
         console.warn(
           "[useConfig] Could not reach API, using fallback:",
@@ -52,19 +64,14 @@ function useTheme() {
 }
 
 // ─── useToolRecommendation hook ────────────────────────────────────────────────
-// Calls GET /api/tools/recommend whenever the form is complete.
-// Returns the ranked list of matching EXALTT tools from the catalog.
-// Silently returns an empty list if the API is unreachable or has no catalog.
 function useToolRecommendation(data, config) {
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 1. Evaluate form completion
-  const formComplete = isFormComplete(data);
+  const formComplete = data ? isFormComplete(data) : false;
 
   useEffect(() => {
-    // 2. Use the evaluated variable
     if (!formComplete || !API_BASE_URL) {
       setTools([]);
       return;
@@ -109,12 +116,12 @@ function useToolRecommendation(data, config) {
 
     return () => controller.abort();
   }, [
-    data.material,
-    data.diameter,
-    data.depthFactor,
-    data.coolant,
+    data?.material,
+    data?.diameter,
+    data?.depthFactor,
+    data?.coolant,
     config.materials,
-    formComplete, // 3. Add to dependencies
+    formComplete,
   ]);
 
   return { tools, loading, error };
@@ -135,8 +142,6 @@ function recommendExalttGeometry(material, iso, geometries) {
   }
   return g.XTA ?? byIso ?? Object.values(g)[0];
 }
-
-// alignedEmail is now called inside the component where NOTEBOOK_EMAIL is in scope
 
 function calcAI(
   {
@@ -228,35 +233,7 @@ function calcAI(
   };
 }
 
-function buildMessage(data, result, recommendedDrill) {
-  return [
-    "Resultado AI EXALTT - Clever Mind Drilling AI",
-    "",
-    `Material: ${data.material}`,
-    `Classificação ISO: ${result.isoDescription}`,
-    `Classe do material: ${result.materialClass}`,
-    `Dureza: ${data.hardness} HRC`,
-    `Broca: ${recommendedDrill}`,
-    `Geometria EXALTT: ${result.geometry.code} — ${result.geometry.name}`,
-    `Aplicação da geometria: ${result.geometry.application}`,
-    `Profundidade: ${data.depthFactor} / ${data.depthMm} mm`,
-    `Máquina: ${data.machine}`,
-    `Refrigeração: ${data.coolant} - ${data.pressure} bar`,
-    "",
-    `Vc: ${result.vc} m/min`,
-    `RPM: ${result.rpm}`,
-    `fn: ${result.fn} mm/rev`,
-    `Vf: ${result.vf} mm/min`,
-    `Vida estimada: ${result.life} furos`,
-    `Potência com margem máquina (+25%): ${result.power} kW`,
-    `Torque: ${result.torque} Nm`,
-    `Stability Score: ${result.stability}%`,
-  ].join("\n");
-}
-
 // ─── Empty state ───────────────────────────────────────────────────────────────
-// The form starts fully empty — no pre-filled values — so the user must
-// explicitly choose every parameter before a calculation is produced.
 const EMPTY_DATA = {
   material: "",
   diameter: "",
@@ -270,25 +247,6 @@ const EMPTY_DATA = {
   cuttingEdges: "",
 };
 
-// Placeholder shown in the results panel before the user fills in the form
-const EMPTY_RESULT = {
-  vc: "—",
-  rpm: "—",
-  fn: "—",
-  vf: "—",
-  life: "—",
-  cuttingPower: "—",
-  power: "—",
-  torque: "—",
-  stability: "—",
-  iso: "—",
-  materialClass: "—",
-  isoDescription: "Preencha os campos para calcular.",
-  geometry: { code: "—", name: "—", application: "—" },
-  baseVc: "—",
-};
-
-// True once every required input has a value — only then do we attempt calcAI
 function isFormComplete(data) {
   return (
     data.material !== "" &&
@@ -305,11 +263,7 @@ function isFormComplete(data) {
 }
 
 // ─── Lead capture ─────────────────────────────────────────────────────────────
-// Shown when the user clicks "Gerar PDF" or "Copiar Resumo".
-// Saves the lead to /api/leads before proceeding with the original action.
-
 function validateLeadPhone(v) {
-  // Validates against the raw digit string (10 or 11 digits)
   const digits = v.replace(/\D/g, "");
   return digits.length === 10 || digits.length === 11;
 }
@@ -319,7 +273,6 @@ function validateLeadEmail(v) {
 }
 
 function formatPhone(raw) {
-  // Accepts any input, strips non-digits, formats as (xx) xxxxx-xxxx
   const digits = raw.replace(/\D/g, "").slice(0, 11);
   if (digits.length === 0) return "";
   if (digits.length <= 2) return `(${digits}`;
@@ -513,10 +466,6 @@ function LeadModal({
   );
 }
 
-// useLead — wraps any action behind a one-time lead capture modal.
-// After the user submits their data once per session, subsequent calls
-// to gate() run the action directly without showing the modal again.
-// Form state is lifted here so it survives close/reopen without resetting.
 function useLead(theme) {
   const [pending, setPending] = useState(null);
   const [name, setName] = useState("");
@@ -534,7 +483,6 @@ function useLead(theme) {
 
   const handleConfirm = () => {
     sessionStorage.setItem(SESSION_KEY, "1");
-    // Clear form only after successful submission
     setName("");
     setEmail("");
     setPhone("");
@@ -566,30 +514,24 @@ export default function CleverMindDashboard() {
   const { gate, modal } = useLead(theme);
 
   const [data, setData] = useState({ ...EMPTY_DATA });
-  const toolRec = useToolRecommendation(data, config);
-  const [status, setStatus] = useState("Sistema AI pronto.");
-  const [pdfLink, setPdfLink] = useState("");
-  const [emailLink, setEmailLink] = useState("");
-  const [lastPdfUrl, setLastPdfUrl] = useState("");
-  const [shareStatus, setShareStatus] = useState(
-    "Use Salvar PDF, E-mail manual ou Copiar Resumo.",
-  );
+  const [submittedData, setSubmittedData] = useState(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  const toolRec = useToolRecommendation(submittedData, config);
 
   const result = useMemo(() => {
-    if (!isFormComplete(data)) return EMPTY_RESULT;
+    if (!submittedData || !isFormComplete(submittedData)) return null;
     try {
-      return calcAI(data, config);
+      return calcAI(submittedData, config);
     } catch {
-      return EMPTY_RESULT;
+      return null;
     }
-  }, [data, config]);
+  }, [submittedData, config]);
 
   const email = brand.notebookEmail;
   const recommendedDrill =
     toolRec.tools?.[0]?.code || `Nenhuma broca EXALTT compatível`;
 
-  // Profundidade máxima permitida (mm) = limiter do fator de profundidade × diâmetro da broca.
-  // Só é calculável quando ambos os campos dependentes já foram preenchidos.
   const maxDepthMm = useMemo(() => {
     const dep = depths[data.depthFactor];
     const d = Number(data.diameter);
@@ -598,11 +540,18 @@ export default function CleverMindDashboard() {
     return dep.limiter * d;
   }, [depths, data.depthFactor, data.diameter]);
 
+  const materialOptions = useMemo(() => {
+    return Object.entries(materials)
+      .map(([mat, info]) => ({
+        id: mat,
+        label: `ISO ${info.iso} - ${mat}`,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [materials]);
+
   const update = (field, value) =>
     setData((prev) => ({ ...prev, [field]: value }));
 
-  // Re-clamp depthMm automatically if a change to depthFactor/diameter lowers the limit
-  // below the value the user already typed.
   useEffect(() => {
     if (maxDepthMm == null) return;
     setData((prev) => {
@@ -617,79 +566,36 @@ export default function CleverMindDashboard() {
 
   const resetForm = () => {
     setData({ ...EMPTY_DATA });
-    setStatus("Sistema AI pronto.");
-    setPdfLink("");
-    setEmailLink("");
-    setShareStatus("Use Salvar PDF, E-mail manual ou Copiar Resumo.");
-  };
-
-  const buildPdf = async () => {
-    return pdf(
-      // Pass the tools array from the toolRec hook
-      <ReportPdf
-        brand={brand}
-        data={data}
-        result={result}
-        email={email}
-        tools={toolRec.tools}
-      />,
-    ).toBlob();
-  };
-
-  const copiarResumo = async () => {
-    try {
-      const message = buildMessage(data, result, recommendedDrill);
-
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(message);
-        setShareStatus(
-          "Resumo técnico copiado. Cole manualmente em e-mail, WhatsApp ou CRM.",
-        );
-        return;
-      }
-
-      setShareStatus(
-        "Clipboard indisponível. Use o PDF salvo ou e-mail manual.",
-      );
-    } catch {
-      setShareStatus(
-        "Não foi possível copiar automaticamente. Use Salvar PDF.",
-      );
-    }
+    setSubmittedData(null);
   };
 
   const gerarPdf = async () => {
+    if (!submittedData || !result) return;
     try {
-      setStatus("Gerando PDF...");
+      setGeneratingPdf(true);
 
-      const blob = await buildPdf();
-
-      if (
-        lastPdfUrl &&
-        lastPdfUrl.startsWith("blob:") &&
-        typeof URL !== "undefined" &&
-        URL.revokeObjectURL
-      ) {
-        URL.revokeObjectURL(lastPdfUrl);
-      }
-
-      if (typeof URL === "undefined" || !URL.createObjectURL) {
-        throw new Error("Recurso de PDF indisponível neste navegador.");
-      }
+      const blob = await pdf(
+        <ReportPdf
+          brand={brand}
+          data={submittedData}
+          result={result}
+          email={email}
+          tools={toolRec.tools}
+        />,
+      ).toBlob();
 
       const url = URL.createObjectURL(blob);
-      const subject = `Resultado AI EXALTT - ${data.material} - Ø${data.diameter}`;
-      const message = buildMessage(data, result, recommendedDrill);
-
-      setLastPdfUrl(url);
-      setPdfLink(url);
-      setEmailLink(
-        `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`,
-      );
-
-      setStatus("PDF gerado com sucesso");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Resultado_${submittedData.material.replaceAll(" ", "-")}-ISO_${result.iso}_${recommendedDrill.replace(/\s+/g, "-")}-Ø${submittedData.diameter}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Erro ao gerar PDF.");
+      console.error("Erro ao gerar PDF:", error);
+    } finally {
+      setGeneratingPdf(false);
     }
   };
 
@@ -711,7 +617,7 @@ export default function CleverMindDashboard() {
       translate="no"
       className={`min-h-screen ${theme.pageBg} ${theme.pageText} p-2 sm:p-4 pb-16 notranslate`}
     >
-      <section className="mx-auto max-w-7xl space-y-3 sm:space-y-4">
+      <section className="mx-auto max-w-7xl flex flex-col gap-4 sm:gap-6">
         <header
           className={`overflow-hidden rounded-3xl border ${theme.headerBorder} ${theme.headerBg} p-4 shadow-xl ${theme.headerShadow} sm:p-5`}
         >
@@ -731,7 +637,8 @@ export default function CleverMindDashboard() {
                 >
                   <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
                   <span className="truncate">
-                    {brand.company} • {brand.line}
+                    {brand.company}
+                    {brand.line.length ? ` • ${brand.line}` : ``}
                   </span>
                 </div>
                 <h1 className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:text-3xl md:text-4xl">
@@ -766,436 +673,318 @@ export default function CleverMindDashboard() {
           </div>
         </header>
 
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-8">
-          <Kpi label="Vc" value={result.vc} unit="m/min" theme={theme} />
-          <Kpi label="RPM" value={result.rpm} theme={theme} />
-          <Kpi label="fn" value={result.fn} unit="mm/rev" theme={theme} />
-          <Kpi label="Vf" value={result.vf} unit="mm/min" theme={theme} />
-          <Kpi label="Vida" value={result.life} unit="furos" theme={theme} />
-          <Kpi
-            label="Potência +25%"
-            value={result.power}
-            unit="kW"
-            theme={theme}
-          />
-          <Kpi label="Torque" value={result.torque} unit="Nm" theme={theme} />
-          <Kpi label="Score" value={result.stability} unit="%" theme={theme} />
-        </section>
-
-        <section className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-4">
-          <div
-            className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5`}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p
-                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelInput}`}
-                >
-                  APLICAÇÃO
-                </p>
-                <h2 className="text-xl font-black">Entrada AI</h2>
-              </div>
-              <button
-                type="button"
-                onClick={resetForm}
-                className={`rounded-full ${theme.topToolsBadgeBg} px-3 py-1 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80`}
+        {/* ── ENTRADA DE DADOS ─────────────────────────────────────── */}
+        <div
+          className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5`}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p
+                className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelInput}`}
               >
-                Limpar campos
-              </button>
+                APLICAÇÃO
+              </p>
+              <h2 className="text-xl font-black">Dados de Entrada</h2>
             </div>
-            <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <Field label="Material / Classe ISO" theme={theme}>
-                  <select
-                    className="input"
-                    value={data.material}
-                    onChange={(event) => update("material", event.target.value)}
-                  >
-                    <option value="" disabled>
-                      Selecione...
-                    </option>
-                    {Object.entries(materials).map(([material, info]) => (
-                      <option key={material} value={material}>
-                        {material} • ISO {info.iso}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="HRC" theme={theme}>
-                  <input
-                    className="input"
-                    type="number"
-                    placeholder="—"
-                    value={data.hardness}
-                    onChange={(event) =>
-                      update(
-                        "hardness",
-                        event.target.value === ""
-                          ? ""
-                          : Number(event.target.value),
-                      )
-                    }
-                  />
-                </Field>
-              </div>
-
-              <div
-                className={`mt-3 rounded-2xl border ${theme.isoBorder} ${theme.isoBg} p-3 text-sm ${theme.isoText}`}
+            <button
+              type="button"
+              onClick={resetForm}
+              className={`rounded-full ${theme.topToolsBadgeBg} px-4 py-1.5 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
+            >
+              Limpar campos
+            </button>
+          </div>
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="sm:col-span-2">
+              <Field
+                label="Material a ser Usinado de acordo com classificação ISO"
+                theme={theme}
               >
-                <p className="font-bold">{result.isoDescription}</p>
-                <p className={`mt-1 ${theme.isoLabel}`}>
-                  {result.materialClass}
-                </p>
-              </div>
-
-              <Field label="Ø Broca" theme={theme}>
-                <input
-                  className="input"
-                  type="number"
-                  min="2"
-                  max="20"
-                  placeholder="—"
-                  value={data.diameter}
-                  onChange={(event) => {
-                    update("diameter", event.target.value);
-                  }}
-                  onBlur={(event) => {
-                    if (event.target.value === "") return;
-                    update(
-                      "diameter",
-                      Math.min(20, Math.max(2, Number(event.target.value))),
-                    );
-                  }}
-                />
-              </Field>
-
-              <Field label="Número de cortes" theme={theme}>
                 <select
                   className="input"
-                  value={data.cuttingEdges}
-                  onChange={(event) =>
-                    update("cuttingEdges", Number(event.target.value))
-                  }
+                  value={data.material}
+                  onChange={(event) => update("material", event.target.value)}
                 >
                   <option value="" disabled>
                     Selecione...
                   </option>
-                  {[2, 3, 4].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
+                  {materialOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
                     </option>
                   ))}
                 </select>
               </Field>
+            </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Field label="Prof." theme={theme}>
-                  <select
-                    className="input"
-                    value={data.depthFactor}
-                    onChange={(event) =>
-                      update("depthFactor", event.target.value)
-                    }
-                  >
-                    <option value="" disabled>
-                      Selecione...
-                    </option>
-                    {Object.keys(depths).map((depth) => (
-                      <option key={depth}>{depth}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field
-                  label={maxDepthMm != null ? `mm (máx. ${maxDepthMm})` : "mm"}
-                  theme={theme}
-                >
-                  <input
-                    className="input"
-                    type="number"
-                    min="1"
-                    max={maxDepthMm ?? undefined}
-                    placeholder="—"
-                    value={data.depthMm}
-                    onChange={(event) =>
-                      update(
-                        "depthMm",
-                        event.target.value === ""
-                          ? ""
-                          : Number(event.target.value),
-                      )
-                    }
-                    onBlur={(event) => {
-                      if (event.target.value === "") return;
-                      let v = Number(event.target.value);
-                      v = Math.max(1, v);
-                      if (maxDepthMm != null) v = Math.min(maxDepthMm, v);
-                      update("depthMm", v);
-                    }}
-                  />
-                </Field>
-              </div>
+            <Field label="Dureza do Material em HRC" theme={theme}>
+              <input
+                className="input"
+                type="number"
+                placeholder="—"
+                value={data.hardness}
+                onChange={(event) =>
+                  update(
+                    "hardness",
+                    event.target.value === "" ? "" : Number(event.target.value),
+                  )
+                }
+              />
+            </Field>
 
-              <Field label="Máquina" theme={theme}>
-                <select
-                  className="input"
-                  value={data.machine}
-                  onChange={(event) => update("machine", event.target.value)}
-                >
-                  <option value="" disabled>
-                    Selecione...
+            <Field label="Diâmetro da Broca" theme={theme}>
+              <input
+                className="input"
+                type="number"
+                min="2"
+                max="20"
+                placeholder="—"
+                value={data.diameter}
+                onChange={(event) => {
+                  update("diameter", event.target.value);
+                }}
+                onBlur={(event) => {
+                  if (event.target.value === "") return;
+                  update(
+                    "diameter",
+                    Math.min(20, Math.max(2, Number(event.target.value))),
+                  );
+                }}
+              />
+            </Field>
+
+            <Field label="Número de cortes" theme={theme}>
+              <select
+                className="input"
+                value={data.cuttingEdges}
+                onChange={(event) =>
+                  update("cuttingEdges", Number(event.target.value))
+                }
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                {[2, 3, 4].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
                   </option>
-                  {Object.keys(machines).map((machine) => (
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Fator de Profundidade" theme={theme}>
+              <select
+                className="input"
+                value={data.depthFactor}
+                onChange={(event) => update("depthFactor", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                {Object.keys(depths).map((depth) => (
+                  <option key={depth}>{depth}</option>
+                ))}
+              </select>
+            </Field>
+
+            <Field
+              label={
+                maxDepthMm != null
+                  ? `Comprimento da Broca (máx. ${maxDepthMm}mm)`
+                  : "Comprimento da Broca"
+              }
+              theme={theme}
+            >
+              <input
+                className="input"
+                type="number"
+                min="1"
+                max={maxDepthMm ?? undefined}
+                placeholder="—"
+                value={data.depthMm}
+                onChange={(event) =>
+                  update(
+                    "depthMm",
+                    event.target.value === "" ? "" : Number(event.target.value),
+                  )
+                }
+                onBlur={(event) => {
+                  if (event.target.value === "") return;
+                  let v = Number(event.target.value);
+                  v = Math.max(1, v);
+                  if (maxDepthMm != null) v = Math.min(maxDepthMm, v);
+                  update("depthMm", v);
+                }}
+              />
+            </Field>
+
+            <Field label="Máquina" theme={theme}>
+              <select
+                className="input"
+                value={data.machine}
+                onChange={(event) => update("machine", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                {Object.keys(machines)
+                  .toSorted()
+                  .map((machine) => (
                     <option key={machine}>{machine}</option>
                   ))}
-                </select>
-              </Field>
+              </select>
+            </Field>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Field label="Refrig." theme={theme}>
-                  <select
-                    className="input"
-                    value={data.coolant}
-                    onChange={(event) => update("coolant", event.target.value)}
-                  >
-                    <option value="" disabled>
-                      Selecione...
-                    </option>
-                    <option>Interna</option>
-                    <option>Externa</option>
-                  </select>
-                </Field>
-                <Field label="bar" theme={theme}>
-                  <input
-                    className="input"
-                    type="number"
-                    placeholder="—"
-                    value={data.pressure}
-                    onChange={(event) =>
-                      update(
-                        "pressure",
-                        event.target.value === ""
-                          ? ""
-                          : Number(event.target.value),
-                      )
-                    }
-                  />
-                </Field>
-              </div>
+            <Field label="Tipo da Refrigeração" theme={theme}>
+              <select
+                className="input"
+                value={data.coolant}
+                onChange={(event) => update("coolant", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                <option>Interna</option>
+                <option>Externa</option>
+              </select>
+            </Field>
 
-              <Field label="Objetivo" theme={theme}>
-                <select
-                  className="input"
-                  value={data.goal}
-                  onChange={(event) => update("goal", event.target.value)}
-                >
-                  <option value="" disabled>
-                    Selecione...
-                  </option>
-                  <option>Alta produtividade</option>
-                  <option>Maior vida útil</option>
-                  <option>Máxima estabilidade</option>
-                  <option>Furação profunda</option>
-                </select>
-              </Field>
-            </div>
+            <Field label="Pressão da Refrigeração em Bars" theme={theme}>
+              <input
+                className="input"
+                type="number"
+                placeholder="—"
+                value={data.pressure}
+                onChange={(event) =>
+                  update(
+                    "pressure",
+                    event.target.value === "" ? "" : Number(event.target.value),
+                  )
+                }
+              />
+            </Field>
+
+            <Field label="Objetivo" theme={theme}>
+              <select
+                className="input"
+                value={data.goal}
+                onChange={(event) => update("goal", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                <option>Alta produtividade</option>
+                <option>Maior vida útil</option>
+                <option>Máxima estabilidade</option>
+                <option>Furação profunda</option>
+              </select>
+            </Field>
           </div>
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setSubmittedData(data)}
+              disabled={!isFormComplete(data)}
+              className={`rounded-2xl ${theme.btnPdf} px-10 py-3.5 font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              Calcular
+            </button>
+          </div>
+        </div>
 
-          <div
-            className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-5 lg:col-span-2`}
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p
-                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
-                >
-                  RESULTADO TÉCNICO
-                </p>
-                <h2 className="text-xl font-black">Resultado AI + PDF</h2>
-              </div>
-              <span
-                className={`rounded-full border ${theme.calcBadgeBorder} ${theme.calcBadgeBg} px-3 py-1 text-xs font-bold ${theme.calcBadgeText}`}
-              >
-                Parâmetros calculados
-              </span>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Result
-                label="Material"
-                value={`${data.material} • ${result.isoDescription}`}
-                theme={theme}
-              />
-              <Result
-                label="Classe ISO"
-                value={result.materialClass}
-                theme={theme}
-              />
-              <Result
-                label="Broca Recomendada"
-                value={recommendedDrill}
-                theme={theme}
-              />
-              <Result
-                label="Geometria EXALTT"
-                value={`${result.geometry.code} — ${result.geometry.name}`}
-                theme={theme}
-              />
-              <Result
-                label="Aplicação Geometria"
-                value={result.geometry.application}
-                theme={theme}
-              />
-              <Result
-                label="Profundidade"
-                value={`${data.depthFactor} / ${data.depthMm} mm`}
-                theme={theme}
-              />
-              <Result
-                label="Vc Base"
-                value={`${result.baseVc} m/min`}
-                theme={theme}
-              />
-            </div>
-
+        {submittedData && result && (
+          <>
             {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
-            {isFormComplete(data) && (
-              <div
-                className={`mt-4 rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4`}
+            <div
+              className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-5`}
+            >
+              <p
+                className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
               >
-                <p
-                  className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
-                >
-                  FERRAMENTAS EXALTT RECOMENDADAS
+                FERRAMENTAS EXALTT RECOMENDADAS
+              </p>
+              {toolRec.loading && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="h-4 w-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
+                  <span className={`text-xs ${theme.kpiLabel}`}>
+                    Buscando ferramentas…
+                  </span>
+                </div>
+              )}
+              {!toolRec.loading && toolRec.error && (
+                <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
+                  {toolRec.error}
                 </p>
-                {toolRec.loading && (
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="h-4 w-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
-                    <span className={`text-xs ${theme.kpiLabel}`}>
-                      Buscando ferramentas…
-                    </span>
-                  </div>
-                )}
-                {!toolRec.loading && toolRec.error && (
+              )}
+              {!toolRec.loading &&
+                !toolRec.error &&
+                toolRec.tools.length === 0 && (
                   <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
-                    {toolRec.error}
+                    Nenhuma ferramenta encontrada no catálogo para esta
+                    configuração.
                   </p>
                 )}
-                {!toolRec.loading &&
-                  !toolRec.error &&
-                  toolRec.tools.length === 0 && (
-                    <p className={`mt-3 text-xs ${theme.kpiLabel}`}>
-                      Nenhuma ferramenta encontrada no catálogo para esta
-                      configuração.
-                    </p>
-                  )}
-                {!toolRec.loading && toolRec.tools.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {toolRec.tools.map((tool, i) => (
-                      <div
-                        key={tool.code}
-                        className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
-                      >
-                        {i === 0 && (
-                          <span
-                            className={`shrink-0 rounded-full ${theme.calcBadgeBg} border ${theme.calcBadgeBorder} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
-                          >
-                            ★ 1ª opção
-                          </span>
-                        )}
+              {!toolRec.loading && toolRec.tools.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {toolRec.tools.map((tool, i) => (
+                    <div
+                      key={tool.code}
+                      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-3 py-2.5`}
+                    >
+                      {i === 0 && (
                         <span
-                          className={`font-black font-mono text-sm ${i === 0 ? theme.calcBadgeText : theme.resultValue}`}
+                          className={`shrink-0 rounded-full ${theme.calcBadgeBg} border ${theme.calcBadgeBorder} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
                         >
-                          {tool.code}
+                          ★ 1ª opção
                         </span>
-                        <span className={`text-xs ${theme.kpiLabel}`}>
-                          Ø{tool.diameter?.toFixed(2)} mm
+                      )}
+                      <span
+                        className={`font-black font-mono text-sm ${i === 0 ? theme.calcBadgeText : theme.resultValue}`}
+                      >
+                        {tool.code}
+                      </span>
+                      <span className={`text-xs ${theme.kpiLabel}`}>
+                        Ø{tool.diameter?.toFixed(2)} mm
+                      </span>
+                      <span className={`text-xs ${theme.kpiLabel}`}>
+                        {tool.depthRatio}
+                      </span>
+                      <span className={`text-xs ${theme.kpiLabel}`}>
+                        {tool.coolant === "internal"
+                          ? "Refrig. interna"
+                          : tool.coolant === "external"
+                            ? "Refrig. externa"
+                            : ""}
+                      </span>
+                      {tool.totalLength && (
+                        <span
+                          className={`sm:ml-auto text-xs ${theme.kpiLabel}`}
+                        >
+                          L {tool.totalLength} mm
                         </span>
-                        <span className={`text-xs ${theme.kpiLabel}`}>
-                          {tool.depthRatio}
-                        </span>
-                        <span className={`text-xs ${theme.kpiLabel}`}>
-                          {tool.coolant === "internal"
-                            ? "Refrig. interna"
-                            : tool.coolant === "external"
-                              ? "Refrig. externa"
-                              : ""}
-                        </span>
-                        {tool.totalLength && (
-                          <span className={`sm:ml-auto text-xs ${theme.kpiLabel}`}>
-                            L {tool.totalLength} mm
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <button
-                onClick={() => gate(gerarPdf)}
-                disabled={!isFormComplete(data)}
-                className={`w-full rounded-2xl ${theme.btnPdf} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
-              >
-                Gerar PDF
-              </button>
-              <button
-                onClick={() => gate(copiarResumo)}
-                disabled={!isFormComplete(data)}
-                className={`w-full rounded-2xl ${theme.btnCopy} py-3 font-black text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-40`}
-              >
-                Copiar Resumo
-              </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <p
-              className={`mt-2 rounded-2xl border ${theme.statusBorder} ${theme.statusBg} p-2 text-xs ${theme.statusText}`}
-            >
-              {status}
-            </p>
-            <p
-              className={`mt-2 rounded-2xl border ${theme.shareBorder} ${theme.shareBg} p-2 text-xs ${theme.shareText}`}
-            >
-              {shareStatus}
-            </p>
-            {pdfLink && (
-              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 no-print">
-                <a
-                  className={`btn ${theme.btnLink}`}
-                  href={pdfLink}
-                  download={`Resultado_AI_${data.material.replaceAll(" ", "-")}-ISO_${result.iso}_${recommendedDrill.replace(/\s+/g, "-")}-Ø${data.diameter}.pdf`}
-                >
-                  Salvar PDF
-                </a>
-                {emailLink && (
-                  <a className={`btn ${theme.btnLink}`} href={emailLink}>
-                    E-mail manual
-                  </a>
-                )}
-                <button
-                  className={`btn ${theme.btnLink}`}
-                  onClick={() => gate(copiarResumo)}
-                >
-                  Copiar Resumo
-                </button>
-              </div>
-            )}
-
+            {/* ── PRINT AREA ─────────────────────────────────────── */}
             <div
               id="print-area"
-              className="mt-4 rounded-2xl border border-slate-700 bg-white p-3 text-slate-950 print-area sm:p-4"
+              className="rounded-2xl border border-slate-700 bg-white p-3 text-slate-950 print-area shadow-lg sm:p-5"
             >
               <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
                   <p className="text-sm font-black text-blue-700">
-                    {brand.company} • {brand.line}
+                    {brand.company}
+                    {brand.line.length ? ` • ${brand.line}` : ``}
                   </p>
                   <h2 className="text-2xl font-black">
-                    Clever Mind – Drilling AI
+                    Clever Mind – Drilling
                   </h2>
                   <p className="text-sm text-slate-600">
-                    Resultado AI para visualização e impressão
+                    Resultado para visualização e impressão
                   </p>
                 </div>
                 <div className="text-right text-sm text-slate-600">
@@ -1204,24 +993,24 @@ export default function CleverMindDashboard() {
                 </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                 <PrintRow
-                  label="Material"
-                  value={`${data.material} • ${result.isoDescription}`}
+                  label="Material a ser Usinado"
+                  value={`${submittedData.material} • ${result.isoDescription}`}
                 />
                 <PrintRow
                   label="Classe do Material"
                   value={result.materialClass}
                 />
-                <PrintRow label="Dureza" value={`${data.hardness} HRC`} />
+                <PrintRow
+                  label="Dureza"
+                  value={`${submittedData.hardness} HRC`}
+                />
                 <PrintRow
                   label="Número de cortes"
-                  value={`${data.cuttingEdges}`}
+                  value={`${submittedData.cuttingEdges}`}
                 />
-                <PrintRow
-                  label="Broca"
-                  value={recommendedDrill}
-                />
+                <PrintRow label="Broca" value={recommendedDrill} />
                 <PrintRow
                   label="Geometria EXALTT"
                   value={`${result.geometry.code} — ${result.geometry.name}`}
@@ -1232,51 +1021,67 @@ export default function CleverMindDashboard() {
                 />
                 <PrintRow
                   label="Profundidade"
-                  value={`${data.depthFactor} / ${data.depthMm} mm`}
+                  value={`${submittedData.depthFactor} / ${submittedData.depthMm} mm`}
                 />
-                <PrintRow label="Máquina" value={data.machine} />
+                <PrintRow label="Máquina" value={submittedData.machine} />
                 <PrintRow
                   label="Refrigeração"
-                  value={`${data.coolant} • ${data.pressure} bar`}
+                  value={`${submittedData.coolant} • ${submittedData.pressure} bar`}
                 />
               </div>
 
               <h3 className="mt-6 text-lg font-black">Resultados de Corte</h3>
               <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-                <PrintKpi label="Vc" value={`${result.vc} m/min`} />
-                <PrintKpi label="RPM / N" value={result.rpm} />
-                <PrintKpi label="fn" value={`${result.fn} mm/rev`} />
-                <PrintKpi label="Vf" value={`${result.vf} mm/min`} />
-                <PrintKpi label="Vida" value={`${result.life} furos`} />
-                <PrintKpi label="Potência +25%" value={`${result.power} kW`} />
                 <PrintKpi
-                  label="Torque c/ margem"
-                  value={`${result.torque} Nm`}
+                  label="Velocidade de Corte (VC)"
+                  value={`${result.vc} m/min`}
                 />
-                <PrintKpi label="Score" value={`${result.stability}%`} />
+                <PrintKpi label="RPM / N" value={result.rpm} />
+                <PrintKpi
+                  label="Avanço por volta (FN)"
+                  value={`${result.fn} mm/rev`}
+                />
+                <PrintKpi label="Avanço (VF)" value={`${result.vf} mm/min`} />
+                <PrintKpi
+                  label="Vida útil estimada"
+                  value={`${result.life} furos`}
+                />
+                <PrintKpi label="Potência" value={`${result.power} kW`} />
+                <PrintKpi label="Torque" value={`${result.torque} Nm`} />
               </div>
 
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <p className="font-bold text-slate-900">Recomendação AI</p>
+                <p className="font-bold text-slate-900">Recomendação</p>
                 <p>
                   Usar broca {recommendedDrill} com geometria{" "}
                   {result.geometry.code} para {result.geometry.application}{" "}
-                  Estratégia ajustada para {data.depthFactor}, considerando{" "}
-                  {data.machine}, refrigeração {data.coolant} e objetivo de{" "}
-                  {data.goal}. A potência exibida já inclui margem de segurança
-                  de 25% para garantia da máquina.
+                  Estratégia ajustada para {submittedData.depthFactor},
+                  considerando {submittedData.machine}, refrigeração{" "}
+                  {submittedData.coolant} e objetivo de {submittedData.goal}. A
+                  potência exibida já inclui margem de segurança de 25% para
+                  garantia da máquina.
                 </p>
               </div>
             </div>
-          </div>
-        </section>
+
+            {/* ── PDF BUTTON ─────────────────────────────────────── */}
+            <div className="mt-2 mb-10 flex flex-col items-center">
+              <button
+                onClick={() => gate(gerarPdf)}
+                disabled={generatingPdf}
+                className={`w-full max-w-md rounded-2xl ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                {generatingPdf ? "Gerando PDF..." : "Gerar PDF"}
+              </button>
+            </div>
+          </>
+        )}
       </section>
 
       <style>{`
         .input{width:100%;border:1px solid ${theme.inputBorder};background:${theme.inputBackground};border-radius:.85rem;padding:.7rem .8rem;color:${theme.inputText};outline:none;font-size:15px}.input:focus{border-color:${theme.inputBorderFocus};box-shadow:0 0 0 3px ${theme.inputFocusRing}}
       `}</style>
       <style>{`
-
         .btn{border-radius:.85rem;padding:.75rem;text-align:center;font-weight:800;color:white;box-shadow:0 8px 18px rgba(0,0,0,.22)}
         button,a{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
         @media print{
@@ -1290,16 +1095,6 @@ export default function CleverMindDashboard() {
   );
 }
 
-function Kpi({ label, value, unit, theme }) {
-  return (
-    <div className={`rounded-xl border ${theme.kpiBorder} ${theme.kpiBg} p-3`}>
-      <p className={`text-xs ${theme.kpiLabel}`}>{label}</p>
-      <p className={`mt-1 text-xl font-black ${theme.kpiValue}`}>{value}</p>
-      {unit && <p className={`text-[11px] ${theme.kpiUnit}`}>{unit}</p>}
-    </div>
-  );
-}
-
 function Field({ label, children, theme }) {
   return (
     <label className="block">
@@ -1308,17 +1103,6 @@ function Field({ label, children, theme }) {
       </span>
       {children}
     </label>
-  );
-}
-
-function Result({ label, value, theme }) {
-  return (
-    <div
-      className={`rounded-xl border ${theme.resultBorder} ${theme.resultBg} p-3`}
-    >
-      <p className={`text-xs ${theme.resultLabel}`}>{label}</p>
-      <p className={`mt-1 text-sm font-bold ${theme.resultValue}`}>{value}</p>
-    </div>
   );
 }
 
