@@ -58,11 +58,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginTop: 4,
   },
 
   subtitle: {
-    marginTop: 4,
     color: "#64748b",
   },
 
@@ -208,7 +206,7 @@ function PdfKpi({ label, value }) {
   );
 }
 
-export function ReportPdf({ brand, data, result, email, tools = [] }) {
+export function ReportPdf({ brand, data, result, tools = [] }) {
   const recommendedDrill =
     tools?.[0]?.code || "Nenhuma broca EXALTT compatível";
 
@@ -236,8 +234,6 @@ export function ReportPdf({ brand, data, result, email, tools = [] }) {
           </View>
 
           <View>
-            <Text style={styles.small}>Usuário: {email}</Text>
-
             <Text style={styles.small}>
               Data: {new Date().toLocaleDateString("pt-BR")}
             </Text>

@@ -576,7 +576,6 @@ export default function CleverMindDashboard() {
           brand={brand}
           data={submittedData}
           result={result}
-          email={email}
           tools={toolRec.tools}
         />,
       ).toBlob();
@@ -1006,19 +1005,21 @@ export default function CleverMindDashboard() {
             >
               <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
-                  <p className="text-sm font-black text-blue-700">
-                    {brand.company}
-                    {brand.line.length ? ` • ${brand.line}` : ``}
-                  </p>
-                  <h2 className="text-2xl font-black">
-                    Clever Mind – Drilling
-                  </h2>
+                  {brand.logoUrl && (
+                    <img
+                      src={brand.logoUrl}
+                      alt={brand.company}
+                      className="h-10 sm:h-12 object-contain"
+                      style={{ filter: "brightness(0)" }}
+                    />
+                  )}
+                  {console.log(brand)}
+                  <h2 className="text-2xl font-black">{brand.product}</h2>
                   <p className="text-sm text-slate-600">
                     Resultado para visualização e impressão
                   </p>
                 </div>
                 <div className="text-right text-sm text-slate-600">
-                  <p>Usuário: {email}</p>
                   <p>Data: {new Date().toLocaleDateString("pt-BR")}</p>
                 </div>
               </div>
