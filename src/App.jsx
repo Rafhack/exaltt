@@ -501,7 +501,7 @@ function useLead(theme) {
 function FormSection({ title, imageSrc, theme, children }) {
   return (
     <div
-      className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} relative mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
+      className={`rounded-2xl p-4 border ${theme.panelBorder} ${theme.panelBg} relative mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
     >
       <div className="relative shrink-0 sm:w-[180px] md:w-[220px]">
         {/* 18:25 Aspect ratio constraint */}
@@ -510,13 +510,17 @@ function FormSection({ title, imageSrc, theme, children }) {
           alt={title}
           className="aspect-[18/25] h-full w-full object-cover"
           style={{
-            WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
-            maskImage: "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+            maskImage:
+              "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
           }}
         />
       </div>
       <div className="flex-1 p-4 sm:p-6 sm:pl-0 flex flex-col justify-center relative z-10">
-        <h3 className={`mb-4 text-lg font-black uppercase tracking-wide ${theme.sectionLabelInput}`}>
+        <h3
+          className={`mb-4 text-lg font-black uppercase tracking-wide ${theme.sectionLabelInput}`}
+        >
           {title}
         </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -645,21 +649,32 @@ export default function CleverMindDashboard() {
       className={`min-h-screen ${theme.pageBg} ${theme.pageText} pb-16 notranslate`}
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
-      <header className="w-full bg-[#E3CE3D] px-40 py-5 sm:px-16 sm:py-6 flex items-center justify-between shadow-md z-10 relative">
-        <div className="flex items-center gap-4 sm:gap-6">
+      <header className="w-full bg-[#E3CE3D] px-4 py-4 sm:px-8 sm:py-3.5 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
+        <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
           {brand.logoUrl && (
             <img
               src={brand.logoUrl}
               alt={brand.company}
-              className="h-10 sm:h-12 object-contain"
+              className="h-8 sm:h-10 shrink-0 object-contain"
               style={{ filter: "brightness(0)" }}
             />
           )}
+          {/* Header Title and Description */}
+          <div className="flex flex-col justify-center border-l border-black/20 pl-3 sm:pl-5 overflow-hidden">
+            <h1 className="text-sm sm:text-3xl font-black text-black leading-none uppercase truncate">
+              {brand.product}
+            </h1>
+            <p className="hidden md:block mt-1 text-[10px] lg:text-sm text-black/75 leading-tight max-w-md lg:max-w-xl">
+              Aplicativo técnico para recomendação de parâmetros de furação,
+              relatório PDF e suporte ao time comercial/aplicação.
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-4 ml-4 shrink-0">
           <div className="relative inline-flex items-center gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
             <svg
-              className="w-5 h-5 text-black"
+              className="w-5 h-5 text-black hidden sm:block"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -697,8 +712,8 @@ export default function CleverMindDashboard() {
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8 mt-2">
-        {/* HERO SECTION */}
-        <div className="mb-4">
+        {/* HERO SECTION (Cleaned up) */}
+        <div className="mb-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3">
               <div
@@ -725,20 +740,10 @@ export default function CleverMindDashboard() {
               Limpar campos
             </button>
           </div>
-          <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl md:text-5xl">
-            {brand.product}
-          </h1>
-          <p
-            className={`mt-3 text-sm sm:text-base leading-relaxed ${theme.pageText} max-w-3xl`}
-          >
-            Aplicativo técnico para recomendação de parâmetros de furação,
-            relatório PDF e suporte ao time comercial/aplicação.
-          </p>
         </div>
 
         {/* ── ENTRADA DE DADOS - SECTIONS ─────────────────────────────────────── */}
         <div className="flex flex-col gap-2">
-
           {/* Section 1: Materials */}
           <FormSection
             title="Material"
@@ -1205,7 +1210,7 @@ export default function CleverMindDashboard() {
 function Field({ label, children, theme }) {
   return (
     <label className="block">
-      <span className={`mb-1.5 block text-xs font-bold ${theme.pageText}`}>
+      <span className={`mb-1.5 block text-sm font-bold ${theme.pageText}`}>
         {label}
       </span>
       {children}
