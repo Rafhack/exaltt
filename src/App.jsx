@@ -272,7 +272,7 @@ function formatPhone(raw) {
 
 function leadInputCls(hasError, theme) {
   return [
-    "w-full border px-3 py-2.5 text-sm outline-none transition",
+    "w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition",
     `bg-${theme.inputBg} text-${theme.inputText} placeholder:text-slate-500`,
     hasError
       ? "border-red-500/60 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
@@ -352,7 +352,7 @@ function LeadModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className={`w-full max-w-md border ${theme.panelBorder} ${theme.panelBg} shadow-2xl`}
+        className={`w-full max-w-md rounded-2xl border ${theme.panelBorder} ${theme.panelBg} shadow-2xl`}
       >
         <div
           className={`flex items-start justify-between border-b ${theme.kpiBorder} px-6 py-5`}
@@ -429,7 +429,7 @@ function LeadModal({
           </LeadField>
 
           {error && (
-            <p className="border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
               {error}
             </p>
           )}
@@ -437,7 +437,7 @@ function LeadModal({
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`w-full ${theme.btnPdf} py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40`}
+            className={`w-full rounded-xl ${theme.btnPdf} py-3 text-sm font-black transition disabled:cursor-not-allowed disabled:opacity-40`}
           >
             {saving ? "Salvando..." : "Continuar"}
           </button>
@@ -670,16 +670,16 @@ export default function CleverMindDashboard() {
         <div className="mb-4">
           <div className="flex flex-wrap items-center gap-3">
             <div
-              className={`inline-flex items-center gap-2 border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+              className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
             >
-              <span className={`h-2 w-2 ${theme.brandDot}`} />
+              <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
               <span className="truncate">
                 {brand.company}
                 {brand.line.length ? ` • ${brand.line}` : ``}
               </span>
             </div>
             <span
-              className={`inline-block border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-3 py-1 text-xs font-bold ${theme.modeBadgeText}`}
+              className={`inline-block rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-3 py-1 text-xs font-bold ${theme.modeBadgeText}`}
             >
               {brand.mode}
             </span>
@@ -697,7 +697,7 @@ export default function CleverMindDashboard() {
 
         {/* ── ENTRADA DE DADOS ─────────────────────────────────────── */}
         <div
-          className={`border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-6`}
+          className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-6`}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -711,7 +711,7 @@ export default function CleverMindDashboard() {
             <button
               type="button"
               onClick={resetForm}
-              className={`border ${theme.brandBadgeBorder} ${theme.topToolsBadgeBg} px-4 py-2 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
+              className={`rounded-full border ${theme.brandBadgeBorder} ${theme.topToolsBadgeBg} px-4 py-2 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
             >
               Limpar campos
             </button>
@@ -913,7 +913,7 @@ export default function CleverMindDashboard() {
               type="button"
               onClick={() => setSubmittedData(data)}
               disabled={!isFormComplete(data)}
-              className={`w-full sm:w-auto ${theme.btnPdf} px-10 py-3.5 font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40`}
+              className={`w-full sm:w-auto rounded-2xl ${theme.btnPdf} px-10 py-3.5 font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40`}
             >
               Calcular
             </button>
@@ -924,7 +924,7 @@ export default function CleverMindDashboard() {
           <div className="fade-in flex flex-col gap-4 sm:gap-6">
             {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
             <div
-              className={`border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
+              className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
             >
               <p
                 className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
@@ -957,11 +957,11 @@ export default function CleverMindDashboard() {
                   {toolRec.tools.map((tool, i) => (
                     <div
                       key={tool.code}
-                      className={`flex flex-wrap items-center gap-x-4 gap-y-2 border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-4 py-3`}
+                      className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border ${i === 0 ? theme.calcBadgeBorder : theme.resultBorder} ${i === 0 ? theme.calcBadgeBg : theme.resultBg} px-4 py-3`}
                     >
                       {i === 0 && (
                         <span
-                          className={`shrink-0 border ${theme.calcBadgeBorder} ${theme.calcBadgeBg} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
+                          className={`shrink-0 rounded-full border ${theme.calcBadgeBorder} ${theme.calcBadgeBg} px-2 py-0.5 text-[10px] font-black ${theme.calcBadgeText}`}
                         >
                           ★ 1ª opção
                         </span>
@@ -1000,7 +1000,7 @@ export default function CleverMindDashboard() {
             {/* ── PRINT AREA ─────────────────────────────────────── */}
             <div
               id="print-area"
-              className="border border-slate-700 bg-white p-4 text-slate-950 print-area shadow-lg sm:p-6"
+              className="rounded-2xl border border-slate-700 bg-white p-4 text-slate-950 print-area shadow-lg sm:p-6"
             >
               <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
                 <div>
@@ -1080,7 +1080,7 @@ export default function CleverMindDashboard() {
                 <PrintKpi label="Torque" value={`${result.torque} Nm`} />
               </div>
 
-              <div className="mt-8 border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700">
                 <p className="font-bold text-slate-900 mb-1">Recomendação</p>
                 <p>
                   Usar broca {recommendedDrill} com geometria{" "}
@@ -1099,7 +1099,7 @@ export default function CleverMindDashboard() {
               <button
                 onClick={() => gate(gerarPdf)}
                 disabled={generatingPdf}
-                className={`w-full max-w-md ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`w-full max-w-md rounded-2xl ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {generatingPdf ? "Gerando PDF..." : "Gerar PDF"}
               </button>
@@ -1109,7 +1109,7 @@ export default function CleverMindDashboard() {
       </section>
 
       <style>{`
-        .input { width:100%; border:1px solid ${theme.inputBorder}; background:${theme.inputBackground}; border-radius:0; padding:.7rem .8rem; color:${theme.inputText}; outline:none; font-size:15px; }
+        .input { width:100%; border:1px solid ${theme.inputBorder}; background:${theme.inputBackground}; border-radius:.85rem; padding:.7rem .8rem; color:${theme.inputText}; outline:none; font-size:15px; }
         .input:focus { border-color:${theme.inputBorderFocus}; box-shadow:0 0 0 3px ${theme.inputFocusRing}; }
 
         @keyframes fadeIn {
@@ -1121,7 +1121,7 @@ export default function CleverMindDashboard() {
         }
       `}</style>
       <style>{`
-        .btn { border-radius:0; padding:.75rem; text-align:center; font-weight:800; color:white; box-shadow:0 8px 18px rgba(0,0,0,.22); }
+        .btn { border-radius:.85rem; padding:.75rem; text-align:center; font-weight:800; color:white; box-shadow:0 8px 18px rgba(0,0,0,.22); }
         button, a { touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
         @media print {
           body { background:white!important; }
@@ -1150,7 +1150,7 @@ function Field({ label, children, theme }) {
 
 function PrintRow({ label, value }) {
   return (
-    <div className="border border-slate-200 p-3">
+    <div className="rounded-xl border border-slate-200 p-3">
       <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
       <p className="mt-1 font-bold text-slate-950">{value}</p>
     </div>
@@ -1159,7 +1159,7 @@ function PrintRow({ label, value }) {
 
 function PrintKpi({ label, value }) {
   return (
-    <div className="border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
       <p className="text-xs font-bold text-slate-500">{label}</p>
       <p className="mt-1 text-lg font-black text-slate-950">{value}</p>
     </div>
