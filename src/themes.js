@@ -269,7 +269,7 @@ export const THEMES = {
 };
 
 export const THEME_KEYS = Object.keys(THEMES);
-export const DEFAULT_THEME = "darkBlue";
+export const DEFAULT_THEME = "light";
 
 export function getTheme(key) {
   return THEMES[key] ?? THEMES[DEFAULT_THEME];
