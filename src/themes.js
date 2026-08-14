@@ -1,29 +1,10 @@
-/**
- * Color scheme definitions for Clever Mind Drilling AI
- *
- * Each theme is a plain object of semantic tokens mapped to Tailwind classes.
- * App.jsx destructures these and applies them directly — no hardcoded colors
- * anywhere in the component tree.
- *
- * To add a new theme:
- *  1. Copy an existing entry
- *  2. Give it a unique key and a `label` in Portuguese
- *  3. Fill in every token
- */
-
 export const THEMES = {
   // ── Dark Blue (original) ──────────────────────────────────────────────────
   darkBlue: {
     label: "Azul escuro",
-
-    // Page
     pageBg: "bg-[#07111f]",
     pageText: "text-white",
 
-    // Header card
-    headerBg: "bg-gradient-to-br from-[#0b1d33] via-[#0a1628] to-[#07111f]",
-    headerBorder: "border-blue-900/40",
-    headerShadow: "shadow-blue-950/40",
     brandBadgeBg: "bg-blue-500/10",
     brandBadgeBorder: "border-blue-400/30",
     brandBadgeText: "text-blue-200",
@@ -34,21 +15,18 @@ export const THEMES = {
     modeBadgeBorder: "border-green-400/30",
     modeBadgeText: "text-green-300",
 
-    // KPI bar
     kpiBg: "bg-slate-900",
     kpiBorder: "border-slate-800",
     kpiLabel: "text-slate-400",
     kpiValue: "text-white",
     kpiUnit: "text-slate-500",
 
-    // Panels
     panelBg: "bg-[#0b1728]",
     panelBorder: "border-slate-800/80",
     panelShadow: "shadow-slate-950/30",
     sectionLabelInput: "text-blue-300",
     sectionLabelResult: "text-cyan-300",
 
-    // Inputs
     inputBackground: "#07111f",
     inputBg: "[#07111f]",
     inputBorder: "rgba(59,130,246,.25)",
@@ -56,19 +34,16 @@ export const THEMES = {
     inputFocusRing: "rgba(0,163,255,.16)",
     inputText: "white",
 
-    // ISO info box
     isoBg: "bg-blue-500/10",
     isoBorder: "border-blue-400/30",
     isoText: "text-blue-100",
     isoLabel: "text-blue-100/80",
 
-    // Result cards
     resultBg: "bg-slate-950",
     resultBorder: "border-slate-800",
     resultLabel: "text-slate-400",
     resultValue: "text-white",
 
-    // Status boxes
     statusBg: "bg-slate-950",
     statusBorder: "border-slate-700",
     statusText: "text-slate-300",
@@ -79,34 +54,24 @@ export const THEMES = {
     shareBorder: "border-indigo-400/30",
     shareText: "text-indigo-100",
 
-    // Calculated badge
     calcBadgeBg: "bg-green-500/10",
     calcBadgeBorder: "border-green-400/30",
     calcBadgeText: "text-green-300",
     topToolsBadgeBg: "bg-blue-600/20",
     topToolsBadgeText: "text-blue-200",
 
-    // Buttons
     btnPdf: "bg-[#00a651] hover:bg-green-500 shadow-green-950/30",
     btnMobile: "bg-[#0057b8] hover:bg-blue-500 shadow-blue-950/30",
     btnCopy: "bg-slate-700 hover:bg-slate-600 shadow-slate-950/30",
     btnLink: "bg-[#0057b8] hover:bg-[#0072ce]",
-
-    // Logo
-    logoFilter:
-      "brightness(0) invert(1) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.4))",
   },
 
   // ── Dark Gray ─────────────────────────────────────────────────────────────
   darkGray: {
     label: "Cinza escuro",
-
     pageBg: "bg-[#111111]",
     pageText: "text-white",
 
-    headerBg: "bg-gradient-to-br from-[#1c1c1c] via-[#181818] to-[#111111]",
-    headerBorder: "border-zinc-800/60",
-    headerShadow: "shadow-zinc-950/60",
     brandBadgeBg: "bg-zinc-700/40",
     brandBadgeBorder: "border-zinc-600/40",
     brandBadgeText: "text-zinc-200",
@@ -166,22 +131,14 @@ export const THEMES = {
     btnMobile: "bg-zinc-700 hover:bg-zinc-600 shadow-zinc-950/30",
     btnCopy: "bg-zinc-800 hover:bg-zinc-700 shadow-zinc-950/30",
     btnLink: "bg-zinc-700 hover:bg-zinc-600",
-
-    // Logo
-    logoFilter:
-      "brightness(0) invert(1) drop-shadow(0 0 2px rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(0,0,0,.4))",
   },
 
   // ── Light ─────────────────────────────────────────────────────────────────
   light: {
     label: "Claro",
-
     pageBg: "bg-slate-100",
     pageText: "text-slate-900",
 
-    headerBg: "bg-gradient-to-br from-white via-slate-50 to-slate-100",
-    headerBorder: "border-slate-300/60",
-    headerShadow: "shadow-slate-300/40",
     brandBadgeBg: "bg-blue-100",
     brandBadgeBorder: "border-blue-300/60",
     brandBadgeText: "text-blue-700",
@@ -241,22 +198,14 @@ export const THEMES = {
     btnMobile: "bg-[#0057b8] hover:bg-blue-500 shadow-blue-200/60",
     btnCopy: "bg-slate-500 hover:bg-slate-600 shadow-slate-200/60",
     btnLink: "bg-[#0057b8] hover:bg-[#0072ce]",
-
-    // Logo
-    logoFilter:
-      "brightness(0) drop-shadow(0 0 2px rgba(255,255,255,.9)) drop-shadow(0 0 6px rgba(255,255,255,.4))",
   },
 
   // ── High Contrast ─────────────────────────────────────────────────────────
   highContrast: {
     label: "Alto contraste",
-
     pageBg: "bg-black",
     pageText: "text-white",
 
-    headerBg: "bg-black",
-    headerBorder: "border-yellow-400",
-    headerShadow: "shadow-yellow-400/10",
     brandBadgeBg: "bg-yellow-400/10",
     brandBadgeBorder: "border-yellow-400",
     brandBadgeText: "text-yellow-300",
@@ -316,10 +265,6 @@ export const THEMES = {
     btnMobile: "bg-yellow-400 hover:bg-yellow-300 text-black shadow-none",
     btnCopy: "bg-[#ea8909] hover:bg-[#f2af57] text-black shadow-none",
     btnLink: "bg-yellow-400 hover:bg-yellow-300 text-black",
-
-    // Logo
-    logoFilter:
-      "brightness(0) invert(1) drop-shadow(0 0 1px rgba(255,255,0,.9)) drop-shadow(0 0 4px rgba(255,255,0,.5))",
   },
 };
 
