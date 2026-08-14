@@ -613,7 +613,7 @@ export default function CleverMindDashboard() {
       className={`min-h-screen ${theme.pageBg} ${theme.pageText} pb-16 notranslate`}
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
-      <header className="w-full bg-[#E3CE3D] px-40 py-5 sm:px-80 sm:py-6 flex items-center justify-between shadow-md z-10 relative">
+      <header className="w-full bg-[#E3CE3D] px-40 py-5 sm:px-16 sm:py-6 flex items-center justify-between shadow-md z-10 relative">
         <div className="flex items-center gap-4 sm:gap-6">
           {brand.logoUrl && (
             <img
