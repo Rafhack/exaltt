@@ -231,6 +231,7 @@ const EMPTY_DATA = {
   machine: "",
   coolant: "",
   pressure: "",
+  fixture: "",
   goal: "",
   cuttingEdges: "",
 };
@@ -245,6 +246,7 @@ function isFormComplete(data) {
     data.machine !== "" &&
     data.coolant !== "" &&
     data.pressure !== "" &&
+    data.fixture !== "" &&
     data.goal !== "" &&
     data.cuttingEdges !== ""
   );
@@ -495,6 +497,36 @@ function useLead(theme) {
   return { gate, modal };
 }
 
+// ─── REUSABLE SECTION COMPONENT ────────────────────────────────────────────────
+function FormSection({ title, imageSrc, theme, children }) {
+  return (
+    <div
+      className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} relative mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
+    >
+      <div className="relative shrink-0 sm:w-[180px] md:w-[220px]">
+        {/* 18:25 Aspect ratio constraint */}
+        <img
+          src={imageSrc}
+          alt={title}
+          className="aspect-[18/25] h-full w-full object-cover"
+          style={{
+            WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+            maskImage: "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
+          }}
+        />
+      </div>
+      <div className="flex-1 p-4 sm:p-6 sm:pl-0 flex flex-col justify-center relative z-10">
+        <h3 className={`mb-4 text-lg font-black uppercase tracking-wide ${theme.sectionLabelInput}`}>
+          {title}
+        </h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CleverMindDashboard() {
   const { config, loading } = useConfig();
   const { brand, materials, depths, machines } = config;
@@ -625,7 +657,6 @@ export default function CleverMindDashboard() {
           )}
         </div>
         <div className="flex items-center gap-4">
-          {/* Custom Theme Selector mimicking Language dropdown */}
           <div className="relative inline-flex items-center gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
             <svg
               className="w-5 h-5 text-black"
@@ -668,21 +699,31 @@ export default function CleverMindDashboard() {
       <section className="mx-auto max-w-7xl flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8 mt-2">
         {/* HERO SECTION */}
         <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div
-              className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
-            >
-              <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
-              <span className="truncate">
-                {brand.company}
-                {brand.line.length ? ` • ${brand.line}` : ``}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border ${theme.brandBadgeBorder} ${theme.brandBadgeBg} px-3 py-1 text-xs font-black tracking-wide ${theme.brandBadgeText}`}
+              >
+                <span className={`h-2 w-2 rounded-full ${theme.brandDot}`} />
+                <span className="truncate">
+                  {brand.company}
+                  {brand.line.length ? ` • ${brand.line}` : ``}
+                </span>
+              </div>
+              <span
+                className={`inline-block rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-3 py-1 text-xs font-bold ${theme.modeBadgeText}`}
+              >
+                {brand.mode}
               </span>
             </div>
-            <span
-              className={`inline-block rounded-full border ${theme.modeBadgeBorder} ${theme.modeBadgeBg} px-3 py-1 text-xs font-bold ${theme.modeBadgeText}`}
+
+            <button
+              type="button"
+              onClick={resetForm}
+              className={`rounded-full border ${theme.brandBadgeBorder} ${theme.topToolsBadgeBg} px-4 py-2 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80`}
             >
-              {brand.mode}
-            </span>
+              Limpar campos
+            </button>
           </div>
           <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl md:text-5xl">
             {brand.product}
@@ -695,28 +736,15 @@ export default function CleverMindDashboard() {
           </p>
         </div>
 
-        {/* ── ENTRADA DE DADOS ─────────────────────────────────────── */}
-        <div
-          className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg ${theme.panelShadow} sm:p-6`}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <p
-                className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelInput}`}
-              >
-                APLICAÇÃO
-              </p>
-              <h2 className="text-xl font-black">Dados de Entrada</h2>
-            </div>
-            <button
-              type="button"
-              onClick={resetForm}
-              className={`rounded-full border ${theme.brandBadgeBorder} ${theme.topToolsBadgeBg} px-4 py-2 text-xs font-bold ${theme.topToolsBadgeText} transition hover:opacity-80 self-start sm:self-auto`}
-            >
-              Limpar campos
-            </button>
-          </div>
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* ── ENTRADA DE DADOS - SECTIONS ─────────────────────────────────────── */}
+        <div className="flex flex-col gap-2">
+
+          {/* Section 1: Materials */}
+          <FormSection
+            title="Material"
+            theme={theme}
+            imageSrc="https://firebasestorage.googleapis.com/v0/b/exaltt-90a74.firebasestorage.app/o/sections%2Fbloco.png?alt=media&token=ecfa9e19-9169-4363-b3c8-2f80431923ac"
+          >
             <div className="sm:col-span-2">
               <Field
                 label="Material a ser Usinado de acordo com classificação ISO"
@@ -753,7 +781,84 @@ export default function CleverMindDashboard() {
                 }
               />
             </Field>
+          </FormSection>
 
+          {/* Section 2: Dados da Máquina */}
+          <FormSection
+            title="Dados da Máquina"
+            theme={theme}
+            imageSrc="https://firebasestorage.googleapis.com/v0/b/exaltt-90a74.firebasestorage.app/o/sections%2Fmaquina.png?alt=media&token=3eda28ad-a88c-480f-a689-c452ea1f33ea"
+          >
+            <Field label="Máquina" theme={theme}>
+              <select
+                className="input"
+                value={data.machine}
+                onChange={(event) => update("machine", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                {Object.keys(machines)
+                  .toSorted()
+                  .map((machine) => (
+                    <option key={machine}>{machine}</option>
+                  ))}
+              </select>
+            </Field>
+
+            <Field label="Tipo da Refrigeração" theme={theme}>
+              <select
+                className="input"
+                value={data.coolant}
+                onChange={(event) => update("coolant", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                <option>Interna</option>
+                <option>Externa</option>
+              </select>
+            </Field>
+
+            <Field label="Pressão da Refrigeração em Bars" theme={theme}>
+              <input
+                className="input"
+                type="number"
+                placeholder="—"
+                value={data.pressure}
+                onChange={(event) =>
+                  update(
+                    "pressure",
+                    event.target.value === "" ? "" : Number(event.target.value),
+                  )
+                }
+              />
+            </Field>
+
+            <Field label="Tipo da Fixação" theme={theme}>
+              <select
+                className="input"
+                value={data.fixture}
+                onChange={(event) => update("fixture", event.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione...
+                </option>
+                <option>Mandril Hidráulico</option>
+                <option>Mandril Térmico</option>
+                <option>Pinça ER</option>
+                <option>Weldon</option>
+                <option>Outro</option>
+              </select>
+            </Field>
+          </FormSection>
+
+          {/* Section 3: Dados da Ferramenta */}
+          <FormSection
+            title="Dados da Ferramenta"
+            theme={theme}
+            imageSrc="https://firebasestorage.googleapis.com/v0/b/exaltt-90a74.firebasestorage.app/o/sections%2Fbroca.png?alt=media&token=6d191edf-2f28-4130-a5c2-8217b3e450d1"
+          >
             <Field label="Diâmetro da Broca" theme={theme}>
               <input
                 className="input"
@@ -840,52 +945,6 @@ export default function CleverMindDashboard() {
               />
             </Field>
 
-            <Field label="Máquina" theme={theme}>
-              <select
-                className="input"
-                value={data.machine}
-                onChange={(event) => update("machine", event.target.value)}
-              >
-                <option value="" disabled>
-                  Selecione...
-                </option>
-                {Object.keys(machines)
-                  .toSorted()
-                  .map((machine) => (
-                    <option key={machine}>{machine}</option>
-                  ))}
-              </select>
-            </Field>
-
-            <Field label="Tipo da Refrigeração" theme={theme}>
-              <select
-                className="input"
-                value={data.coolant}
-                onChange={(event) => update("coolant", event.target.value)}
-              >
-                <option value="" disabled>
-                  Selecione...
-                </option>
-                <option>Interna</option>
-                <option>Externa</option>
-              </select>
-            </Field>
-
-            <Field label="Pressão da Refrigeração em Bars" theme={theme}>
-              <input
-                className="input"
-                type="number"
-                placeholder="—"
-                value={data.pressure}
-                onChange={(event) =>
-                  update(
-                    "pressure",
-                    event.target.value === "" ? "" : Number(event.target.value),
-                  )
-                }
-              />
-            </Field>
-
             <Field label="Objetivo" theme={theme}>
               <select
                 className="input"
@@ -901,8 +960,10 @@ export default function CleverMindDashboard() {
                 <option>Furação profunda</option>
               </select>
             </Field>
-          </div>
-          <div className="mt-8 flex flex-col sm:flex-row items-end sm:items-center justify-end gap-4">
+          </FormSection>
+
+          {/* Submit area */}
+          <div className="mt-2 flex flex-col sm:flex-row items-end sm:items-center justify-end gap-4">
             {isDirty && (
               <p className="text-xs font-bold text-amber-500 animate-pulse text-right sm:text-left">
                 ⚠️ Parâmetros alterados. Clique em Calcular para atualizar os
@@ -921,7 +982,7 @@ export default function CleverMindDashboard() {
         </div>
 
         {submittedData && result && (
-          <div className="fade-in flex flex-col gap-4 sm:gap-6">
+          <div className="fade-in flex flex-col gap-4 sm:gap-6 mt-4">
             {/* ── TOOL RECOMMENDATION ─────────────────────────────────────── */}
             <div
               className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
@@ -1057,6 +1118,10 @@ export default function CleverMindDashboard() {
                 <PrintRow
                   label="Refrigeração"
                   value={`${submittedData.coolant} • ${submittedData.pressure} bar`}
+                />
+                <PrintRow
+                  label="Tipo da Fixação"
+                  value={submittedData.fixture}
                 />
               </div>
 
