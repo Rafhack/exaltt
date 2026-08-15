@@ -672,7 +672,7 @@ Poderiam me ajudar?`;
       className={`min-h-screen ${theme.pageBg} ${theme.pageText} pb-16 notranslate`}
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
-      <header className="w-full bg-[#E3CE3D] px-4 py-3 sm:px-8 sm:py-4 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
+      <header className="w-full bg-[#E3CE3D] px-4 py-3 sm:px-8 sm:py-3.5 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
         <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
           {brand.logoUrl && (
             <img
@@ -684,10 +684,10 @@ Poderiam me ajudar?`;
           )}
           {/* Header Title and Description */}
           <div className="flex flex-col justify-center border-l border-black/20 pl-3 sm:pl-5 overflow-hidden">
-            <h1 className="text-sm sm:text-base font-black text-black leading-none uppercase truncate">
+            <h1 className="text-sm sm:text-3xl font-black text-black leading-none uppercase truncate">
               {brand.product}
             </h1>
-            <p className="hidden md:block mt-1 text-[10px] lg:text-xs text-black/75 leading-tight truncate max-w-md lg:max-w-xl">
+            <p className="hidden md:block mt-1 text-[10px] lg:text-sm text-black/75 leading-tight max-w-md lg:max-w-xl">
               Aplicativo técnico para recomendação de parâmetros de furação,
               relatório PDF e suporte ao time comercial/aplicação.
             </p>
@@ -1240,7 +1240,7 @@ Poderiam me ajudar?`;
 function Field({ label, children, theme }) {
   return (
     <label className="block">
-      <span className={`mb-1.5 block text-xs font-bold ${theme.pageText}`}>
+      <span className={`mb-1.5 block text-sm font-bold ${theme.pageText}`}>
         {label}
       </span>
       {children}
