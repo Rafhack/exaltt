@@ -630,6 +630,29 @@ export default function CleverMindDashboard() {
     }
   };
 
+  const comprarViaWhatsapp = () => {
+    if (!submittedData || !result) return;
+
+    const message = `Olá! Gostaria de cotar as seguintes ferramentas recomendadas pelo SMARTT:
+
+*Broca Recomendada:* ${recommendedDrill}
+*Geometria:* ${result.geometry.code}
+*Material:* ${submittedData.material} (${result.isoDescription})
+*Diâmetro:* ${submittedData.diameter} mm
+*Profundidade:* ${submittedData.depthFactor} / ${submittedData.depthMm} mm
+
+*Parâmetros de Corte Calculados:*
+- VC: ${result.vc} m/min
+- RPM: ${result.rpm}
+- FN: ${result.fn} mm/rev
+- VF: ${result.vf} mm/min
+
+Poderiam me ajudar?`;
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/554721070257?text=${encodedMessage}`, "_blank");
+  };
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#07111f] text-white">
@@ -649,7 +672,7 @@ export default function CleverMindDashboard() {
       className={`min-h-screen ${theme.pageBg} ${theme.pageText} pb-16 notranslate`}
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
-      <header className="w-full bg-[#E3CE3D] px-4 py-4 sm:px-8 sm:py-3.5 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
+      <header className="w-full bg-[#E3CE3D] px-4 py-3 sm:px-8 sm:py-4 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
         <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
           {brand.logoUrl && (
             <img
@@ -661,10 +684,10 @@ export default function CleverMindDashboard() {
           )}
           {/* Header Title and Description */}
           <div className="flex flex-col justify-center border-l border-black/20 pl-3 sm:pl-5 overflow-hidden">
-            <h1 className="text-sm sm:text-3xl font-black text-black leading-none uppercase truncate">
+            <h1 className="text-sm sm:text-base font-black text-black leading-none uppercase truncate">
               {brand.product}
             </h1>
-            <p className="hidden md:block mt-1 text-[10px] lg:text-sm text-black/75 leading-tight max-w-md lg:max-w-xl">
+            <p className="hidden md:block mt-1 text-[10px] lg:text-xs text-black/75 leading-tight truncate max-w-md lg:max-w-xl">
               Aplicativo técnico para recomendação de parâmetros de furação,
               relatório PDF e suporte ao time comercial/aplicação.
             </p>
@@ -1164,12 +1187,19 @@ export default function CleverMindDashboard() {
               </div>
             </div>
 
-            {/* ── PDF BUTTON ─────────────────────────────────────── */}
-            <div className="mt-4 mb-10 flex flex-col items-center">
+            {/* ── ACTION BUTTONS ─────────────────────────────────────── */}
+            <div className="mt-6 mb-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => gate(comprarViaWhatsapp)}
+                className={`w-full sm:w-auto min-w-[250px] rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] py-4 text-lg font-black text-white shadow-lg transition`}
+              >
+                Comprar via WhatsApp
+              </button>
+
               <button
                 onClick={() => gate(gerarPdf)}
                 disabled={generatingPdf}
-                className={`w-full max-w-md rounded-2xl ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
+                className={`w-full sm:w-auto min-w-[250px] rounded-2xl ${theme.btnPdf} py-4 text-lg font-black text-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {generatingPdf ? "Gerando PDF..." : "Gerar PDF"}
               </button>
@@ -1210,7 +1240,7 @@ export default function CleverMindDashboard() {
 function Field({ label, children, theme }) {
   return (
     <label className="block">
-      <span className={`mb-1.5 block text-sm font-bold ${theme.pageText}`}>
+      <span className={`mb-1.5 block text-xs font-bold ${theme.pageText}`}>
         {label}
       </span>
       {children}
