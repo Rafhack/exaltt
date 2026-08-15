@@ -508,7 +508,7 @@ function FormSection({ title, imageSrc, theme, children }) {
         <img
           src={imageSrc}
           alt={title}
-          className="aspect-[18/25] h-full w-full object-cover"
+          className="aspect-[18/25] sm:h-full h-20 sm:w-full object-cover"
           style={{
             WebkitMaskImage:
               "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
@@ -1190,7 +1190,7 @@ Poderiam me ajudar?`;
             {/* ── ACTION BUTTONS ─────────────────────────────────────── */}
             <div className="mt-6 mb-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
-                onClick={() => gate(comprarViaWhatsapp)}
+                onClick={() => comprarViaWhatsapp()}
                 className={`w-full sm:w-auto min-w-[250px] rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] py-4 text-lg font-black text-white shadow-lg transition`}
               >
                 Comprar via WhatsApp
