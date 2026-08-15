@@ -695,9 +695,9 @@ Poderiam me ajudar?`;
         </div>
 
         <div className="flex items-center gap-4 ml-4 shrink-0">
-          <div className="relative inline-flex items-center gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
+          <div className="relative inline-flex items-center sm:gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
             <svg
-              className="w-5 h-5 text-black hidden sm:block"
+              className="w-6 h-6 sm:w-5 sm:h-5 text-black"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
@@ -706,7 +706,7 @@ Poderiam me ajudar?`;
             <select
               value={themeKey}
               onChange={(e) => setTheme(e.target.value)}
-              className="appearance-none bg-transparent outline-none cursor-pointer pr-5 font-black uppercase text-black"
+              className="absolute inset-0 w-full h-full opacity-0 sm:static sm:w-auto sm:h-auto sm:opacity-100 appearance-none bg-transparent outline-none cursor-pointer sm:pr-5 font-black uppercase text-black"
             >
               {THEME_KEYS.map((k) => (
                 <option key={k} value={k} className="text-black bg-white">
@@ -714,7 +714,7 @@ Poderiam me ajudar?`;
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-0 flex items-center">
+            <div className="pointer-events-none absolute right-0 hidden sm:flex items-center">
               <svg
                 className="h-4 w-4 text-black"
                 fill="none"
@@ -1209,7 +1209,26 @@ Poderiam me ajudar?`;
       </section>
 
       <style>{`
-        .input { width:100%; border:1px solid ${theme.inputBorder}; background:${theme.inputBackground}; border-radius:.85rem; padding:.7rem .8rem; color:${theme.inputText}; outline:none; font-size:15px; }
+        .input {
+          width: 100%;
+          border: 1px solid ${theme.inputBorder};
+          background-color: ${theme.inputBackground};
+          border-radius: .85rem;
+          padding: .7rem .8rem;
+          color: ${theme.inputText};
+          outline: none;
+          font-size: 15px;
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+        }
+        select.input {
+          background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+          background-position: right 0.75rem center;
+          background-repeat: no-repeat;
+          background-size: 1.2em 1.2em;
+          padding-right: 2.5rem;
+        }
         .input:focus { border-color:${theme.inputBorderFocus}; box-shadow:0 0 0 3px ${theme.inputFocusRing}; }
 
         @keyframes fadeIn {
