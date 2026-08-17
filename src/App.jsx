@@ -874,11 +874,11 @@ Poderiam me ajudar?`;
                 <option value="" disabled>
                   Selecione...
                 </option>
-                <option>Mandril Hidráulico</option>
-                <option>Mandril Térmico</option>
-                <option>Pinça ER</option>
-                <option>Weldon</option>
-                <option>Outro</option>
+                <option>Mandril porta pinça</option>
+                <option>Mandril Weldon</option>
+                <option>Mandril Hidraulico</option>
+                <option>Mandril Termico</option>
+                <option>Especial</option>
               </select>
             </Field>
           </FormSection>
