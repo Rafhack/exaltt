@@ -58,9 +58,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
+    marginTop: 4,
   },
 
   subtitle: {
+    marginTop: 4,
     color: "#64748b",
   },
 
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
     width: "48%",
     border: 1,
     borderColor: "#e2e8f0",
-    borderRadius: 0,
+    borderRadius: 10,
     padding: 10,
   },
 
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
     border: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
-    borderRadius: 0,
+    borderRadius: 10,
     padding: 10,
   },
 
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     border: 1,
     borderColor: "#e2e8f0",
     backgroundColor: "#f8fafc",
-    borderRadius: 0,
+    borderRadius: 12,
     padding: 14,
   },
 
@@ -206,9 +208,8 @@ function PdfKpi({ label, value }) {
   );
 }
 
-export function ReportPdf({ brand, data, result, tools = [] }) {
-  const recommendedDrill =
-    tools?.[0]?.code || "Nenhuma broca EXALTT compatível";
+export function ReportPdf({ brand, data, result, email, tools = [] }) {
+  const recommendedDrill = tools?.[0]?.code || "Nenhuma broca EXALTT compatível";
 
   return (
     <Document>
@@ -278,6 +279,11 @@ export function ReportPdf({ brand, data, result, tools = [] }) {
               label="Refrigeração"
               value={`${data.coolant} • ${data.pressure} bar`}
             />
+
+            <PdfRow
+              label="Tipo da Fixação"
+              value={data.fixture}
+            />
           </View>
         </View>
 
@@ -287,17 +293,11 @@ export function ReportPdf({ brand, data, result, tools = [] }) {
           <Text style={styles.resultsTitle}>Resultados de Corte</Text>
 
           <View style={styles.kpiGrid}>
-            <PdfKpi
-              label="Velocidade de Corte (VC)"
-              value={`${result.vc} m/min`}
-            />
+            <PdfKpi label="Velocidade de Corte (VC)" value={`${result.vc} m/min`} />
 
             <PdfKpi label="RPM / N" value={result.rpm} />
 
-            <PdfKpi
-              label="Avanço por volta (FN)"
-              value={`${result.fn} mm/rev`}
-            />
+            <PdfKpi label="Avanço por volta (FN)" value={`${result.fn} mm/rev`} />
 
             <PdfKpi label="Avanço (VF)" value={`${result.vf} mm/min`} />
 
