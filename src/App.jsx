@@ -501,7 +501,7 @@ function useLead(theme) {
 function FormSection({ title, imageSrc, theme, children }) {
   return (
     <div
-      className={`rounded-2xl p-4 border ${theme.panelBorder} ${theme.panelBg} relative mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
+      className={`rounded-2xl p-5 border ${theme.panelBorder} ${theme.panelBg} relative gap-8 mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
     >
       <div className="relative shrink-0 sm:w-[180px] md:w-[220px]">
         {/* 18:25 Aspect ratio constraint */}
@@ -523,7 +523,7 @@ function FormSection({ title, imageSrc, theme, children }) {
         >
           {title}
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 w-fit">
           {children}
         </div>
       </div>
@@ -862,6 +862,8 @@ Poderiam me ajudar?`;
                 }
               />
             </Field>
+
+            <div></div>
 
             <Field label="Tipo da Fixação" theme={theme}>
               <select
