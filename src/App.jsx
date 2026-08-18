@@ -673,28 +673,39 @@ Poderiam me ajudar?`;
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
       <header className="w-full bg-[#E3CE3D] px-4 py-3 sm:px-8 sm:py-3.5 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
-        <div className="flex items-center gap-3 sm:gap-5 overflow-hidden">
-          {brand.logoUrl && (
+
+        {/* Left: Logo 1 */}
+        <div className="flex-1 flex justify-start items-center overflow-hidden">
+          {brand.logo1.logoUrl && (
             <img
-              src={brand.logoUrl}
+              src={brand.logo1.logoUrl}
               alt={brand.company}
               className="h-8 sm:h-10 shrink-0 object-contain"
               style={{ filter: "brightness(0)" }}
             />
           )}
-          {/* Header Title and Description */}
-          <div className="flex flex-col justify-center border-l border-black/20 pl-3 sm:pl-5 overflow-hidden">
-            <h1 className="text-sm sm:text-3xl font-black text-black leading-none uppercase truncate">
-              {brand.product}
-            </h1>
-            <p className="hidden md:block mt-1 text-[10px] lg:text-sm text-black/75 leading-tight max-w-md lg:max-w-xl">
-              Aplicativo técnico para recomendação de parâmetros de furação,
-              relatório PDF e suporte ao time comercial/aplicação.
-            </p>
-          </div>
         </div>
 
-        <div className="flex items-center gap-4 ml-4 shrink-0">
+        {/* Center: Logo 2 & Description */}
+        <div className="flex-[2] flex flex-col items-center justify-center px-2 sm:px-4 text-center overflow-hidden">
+          <h1 className="text-sm sm:text-3xl font-black text-black leading-none uppercase truncate flex justify-center">
+            {brand.logo2.logoUrl && (
+              <img
+                src={brand.logo2.logoUrl}
+                alt={brand.company}
+                className="h-5 sm:h-8 shrink-0 object-contain"
+                style={{ filter: "brightness(0)" }}
+              />
+            )}
+          </h1>
+          <p className="hidden md:block mt-1 text-[10px] lg:text-sm text-black/75 leading-tight max-w-md lg:max-w-xl mx-auto">
+            Aplicativo técnico para recomendação de parâmetros de furação,
+            relatório PDF e suporte ao time comercial/aplicação.
+          </p>
+        </div>
+
+        {/* Right: Theme Picker */}
+        <div className="flex-1 flex justify-end items-center gap-4 shrink-0">
           <div className="relative inline-flex items-center sm:gap-2 text-black font-black text-xs sm:text-sm tracking-widest uppercase">
             <svg
               className="w-6 h-6 sm:w-5 sm:h-5 text-black"
