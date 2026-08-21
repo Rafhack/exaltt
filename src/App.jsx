@@ -1039,21 +1039,21 @@ Poderiam me ajudar?`;
             <div
               className={`rounded-2xl border ${theme.panelBorder} ${theme.panelBg} p-4 shadow-lg sm:p-6`}
             >
-              <p
-                className={`text-xs font-black tracking-[0.18em] ${theme.sectionLabelResult}`}
+              <h3
+                className={`mb-4 text-lg font-black uppercase tracking-wide ${theme.sectionLabelResult}`}
               >
                 FERRAMENTAS EXALTT RECOMENDADAS
-              </p>
+              </h3>
               {toolRec.loading && (
                 <div className="mt-4 flex items-center gap-2">
                   <div className="h-4 w-4 rounded-full border-2 border-cyan-500/30 border-t-cyan-500 animate-spin" />
-                  <span className={`text-xs ${theme.kpiLabel}`}>
+                  <span className={`${theme.kpiLabel}`}>
                     Buscando ferramentas…
                   </span>
                 </div>
               )}
               {!toolRec.loading && toolRec.error && (
-                <p className={`fade-in mt-4 text-xs ${theme.kpiLabel}`}>
+                <p className={`fade-in mt-4 ${theme.kpiLabel}`}>
                   {toolRec.error}
                 </p>
               )}
