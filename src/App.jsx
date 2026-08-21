@@ -65,6 +65,15 @@ function useToolRecommendation(data, config) {
       return;
     }
 
+    if (Number(data.cuttingEdges) !== 2) {
+      setTools([]);
+      setError(
+        "Nenhuma ferramenta EXALTT compatível, é necessário o desenvolvimento de ferramenta especial",
+      );
+      setLoading(false);
+      return;
+    }
+
     const mat = config.materials[data.material];
     const materialISO = mat?.iso ?? "";
     const coolant =
@@ -108,6 +117,7 @@ function useToolRecommendation(data, config) {
     data?.diameter,
     data?.depthFactor,
     data?.coolant,
+    data?.cuttingEdges,
     config.materials,
     formComplete,
   ]);
@@ -562,7 +572,9 @@ export default function CleverMindDashboard() {
   }, [submittedData, config]);
 
   const recommendedDrill =
-    toolRec.tools?.[0]?.code || `Nenhuma broca EXALTT compatível`;
+    submittedData && Number(submittedData.cuttingEdges) !== 2
+      ? "Nenhuma ferramenta EXALTT compatível, é necessário o desenvolvimento de ferramenta especial"
+      : toolRec.tools?.[0]?.code || `Nenhuma broca EXALTT compatível`;
 
   const maxDepthMm = useMemo(() => {
     const dep = depths[data.depthFactor];
