@@ -511,14 +511,14 @@ function useLead(theme) {
 function FormSection({ title, imageSrc, theme, children }) {
   return (
     <div
-      className={`rounded-2xl p-5 border ${theme.panelBorder} ${theme.panelBg} relative gap-8 mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
+      className={`rounded-2xl p-5 border ${theme.panelBorder} ${theme.panelBg} relative sm:gap-8 mb-6 flex flex-col overflow-hidden shadow-lg ${theme.panelShadow} sm:flex-row`}
     >
       <div className="relative shrink-0 sm:w-[180px] md:w-[220px]">
         {/* 18:25 Aspect ratio constraint */}
         <img
           src={imageSrc}
           alt={title}
-          className="aspect-[18/25] sm:h-full h-20 sm:w-full object-cover"
+          className="aspect-[18/25] -mb-3 sm:-mb-0 ml-3 sm:ml-0 sm:h-full h-20 sm:w-full object-cover"
           style={{
             WebkitMaskImage:
               "linear-gradient(to right, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%)",
