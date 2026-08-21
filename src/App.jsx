@@ -673,7 +673,6 @@ Poderiam me ajudar?`;
     >
       {/* ── NAVBAR (Website-like Header) ─────────────────────────────── */}
       <header className="w-full bg-[#E3CE3D] px-4 py-3 sm:px-8 sm:py-3.5 lg:px-16 flex items-center justify-between shadow-md z-10 relative">
-
         {/* Left: Logo 1 */}
         <div className="flex-1 flex justify-start items-center overflow-hidden">
           {brand.logo1.logoUrl && (
@@ -820,6 +819,37 @@ Poderiam me ajudar?`;
                 }
               />
             </Field>
+            <div />
+            <Field
+              label={
+                maxDepthMm != null
+                  ? `Comprimento do furo (máx. ${maxDepthMm}mm)`
+                  : "Comprimento do furo"
+              }
+              theme={theme}
+            >
+              <input
+                className="input"
+                type="number"
+                min="1"
+                max={maxDepthMm ?? undefined}
+                placeholder="—"
+                value={data.depthMm}
+                onChange={(event) =>
+                  update(
+                    "depthMm",
+                    event.target.value === "" ? "" : Number(event.target.value),
+                  )
+                }
+                onBlur={(event) => {
+                  if (event.target.value === "") return;
+                  let v = Number(event.target.value);
+                  v = Math.max(1, v);
+                  if (maxDepthMm != null) v = Math.min(maxDepthMm, v);
+                  update("depthMm", v);
+                }}
+              />
+            </Field>
           </FormSection>
 
           {/* Section 2: Dados da Máquina */}
@@ -874,7 +904,7 @@ Poderiam me ajudar?`;
               />
             </Field>
 
-            <div></div>
+            <div />
 
             <Field label="Tipo da Fixação" theme={theme}>
               <select
@@ -940,7 +970,7 @@ Poderiam me ajudar?`;
               </select>
             </Field>
 
-            <Field label="Fator de Profundidade" theme={theme}>
+            <Field label="Comprimento da Broca" theme={theme}>
               <select
                 className="input"
                 value={data.depthFactor}
@@ -953,37 +983,6 @@ Poderiam me ajudar?`;
                   <option key={depth}>{depth}</option>
                 ))}
               </select>
-            </Field>
-
-            <Field
-              label={
-                maxDepthMm != null
-                  ? `Comprimento da Broca (máx. ${maxDepthMm}mm)`
-                  : "Comprimento da Broca"
-              }
-              theme={theme}
-            >
-              <input
-                className="input"
-                type="number"
-                min="1"
-                max={maxDepthMm ?? undefined}
-                placeholder="—"
-                value={data.depthMm}
-                onChange={(event) =>
-                  update(
-                    "depthMm",
-                    event.target.value === "" ? "" : Number(event.target.value),
-                  )
-                }
-                onBlur={(event) => {
-                  if (event.target.value === "") return;
-                  let v = Number(event.target.value);
-                  v = Math.max(1, v);
-                  if (maxDepthMm != null) v = Math.min(maxDepthMm, v);
-                  update("depthMm", v);
-                }}
-              />
             </Field>
 
             <Field label="Objetivo" theme={theme}>
